@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopingWithWindowsAzure.Site", "DevelopingWithWindowsAzure.Site\DevelopingWithWindowsAzure.Site.csproj", "{16E9F161-D997-4AA6-B54A-500B00D24361}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopingWithWindowsAzure.Site.Tests", "DevelopingWithWindowsAzure.Site.Tests\DevelopingWithWindowsAzure.Site.Tests.csproj", "{DEC54654-5CBF-49CD-A7E5-EA04C8DA1900}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopingWithWindowsAzure.Tests", "DevelopingWithWindowsAzure.Site.Tests\DevelopingWithWindowsAzure.Tests.csproj", "{DEC54654-5CBF-49CD-A7E5-EA04C8DA1900}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopingWithWindowsAzure.Shared", "DevelopingWithWindowsAzure.Data\DevelopingWithWindowsAzure.Shared.csproj", "{F8A65257-709B-4332-BC8E-31D016F21811}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +21,10 @@ Global
 		{DEC54654-5CBF-49CD-A7E5-EA04C8DA1900}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEC54654-5CBF-49CD-A7E5-EA04C8DA1900}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEC54654-5CBF-49CD-A7E5-EA04C8DA1900}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8A65257-709B-4332-BC8E-31D016F21811}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8A65257-709B-4332-BC8E-31D016F21811}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8A65257-709B-4332-BC8E-31D016F21811}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8A65257-709B-4332-BC8E-31D016F21811}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
