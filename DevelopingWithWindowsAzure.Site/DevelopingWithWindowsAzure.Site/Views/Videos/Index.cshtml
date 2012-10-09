@@ -17,6 +17,9 @@
         <th>
             @Html.DisplayNameFor(model => model.AddedOn)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.VideoStatusEnum)
+        </th>
         <th></th>
     </tr>
 
@@ -27,6 +30,9 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.AddedOn)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.VideoStatusEnum)
         </td>
         <td>
             @Html.ActionLink("Delete", "Delete", new { id=item.VideoID })

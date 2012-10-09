@@ -45,10 +45,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Context.cs" />
+    <Compile Include="Data\IRepository.cs" />
     <Compile Include="Entities\Video.cs" />
+    <Compile Include="Enums\VideoStatus.cs" />
+    <Compile Include="Helper\VideoHelper.cs" />
     <Compile Include="Migrations\201210080035008_initial.cs" />
     <Compile Include="Migrations\201210080035008_initial.Designer.cs">
       <DependentUpon>201210080035008_initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210091541295_AddVideoStatusColumn.cs" />
+    <Compile Include="Migrations\201210091541295_AddVideoStatusColumn.Designer.cs">
+      <DependentUpon>201210091541295_AddVideoStatusColumn.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -63,6 +70,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201210080035008_initial.resx">
       <DependentUpon>201210080035008_initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210091541295_AddVideoStatusColumn.resx">
+      <DependentUpon>201210091541295_AddVideoStatusColumn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

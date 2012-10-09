@@ -1,12 +1,13 @@
 ﻿using DevelopingWithWindowsAzure.Shared.Entities;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 
 namespace DevelopingWithWindowsAzure.Shared.Data
 {
-	public class Repository : IDisposable
+	public class Repository : IRepository
 	{
 		private Context _context;
 
@@ -23,15 +24,17 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 		{
 			return _context.Videos.Find(videoID);
 		}
-		// JCTODO change to SaveVideo??? how does add/edit differ???
-		public void AddVideo(Video video)
+		public void InsertOrUpdateVideo(Video video)
 		{
-			_context.Videos.Add(video);
+			_context.Entry(video).State = video.VideoID == 0 ? EntityState.Added : EntityState.Modified;
 			_context.SaveChanges();
 		}
 		public void DeleteVideo(int videoID)
 		{
-			// JCTODO setup delete (need to do a get first???)
+			var video = new Video() { VideoID = videoID };
+			_context.Videos.Attach(video);
+			_context.Videos.Remove(video);
+			_context.SaveChanges();
 		}
 
 		public void Dispose()
