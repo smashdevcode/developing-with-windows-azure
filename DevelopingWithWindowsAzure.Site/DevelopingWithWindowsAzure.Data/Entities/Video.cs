@@ -1,6 +1,7 @@
 ﻿using DevelopingWithWindowsAzure.Shared.Enums;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -19,5 +20,6 @@ namespace DevelopingWithWindowsAzure.Shared.Entities
 			get { return (VideoStatus)this.VideoStatus; }
 			set { this.VideoStatus = (int)value; }
 		}
+		public Stream FileData { get; set; }
 	}
 }

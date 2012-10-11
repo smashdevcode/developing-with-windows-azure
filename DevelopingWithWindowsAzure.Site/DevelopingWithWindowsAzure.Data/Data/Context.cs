@@ -24,8 +24,7 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 			videoEntity.Property(v => v.FileName).HasMaxLength(255).IsRequired();
 			videoEntity.Property(v => v.Title).HasMaxLength(100).IsRequired();
 			videoEntity.Ignore(v => v.VideoStatusEnum);
-			// JCTODO ignore binary data
-			//videoEntity.Ignore(v => v.File);
+			videoEntity.Ignore(v => v.FileData);
 		}
 	}
 }
