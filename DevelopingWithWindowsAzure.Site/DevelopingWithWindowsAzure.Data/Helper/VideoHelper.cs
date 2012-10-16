@@ -6,11 +6,15 @@ using System.Linq;
 using System.Text;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.ServiceBus;
+using Microsoft.ServiceBus.Messaging;
 
 namespace DevelopingWithWindowsAzure.Shared.Helper
 {
 	public class VideoHelper
 	{
+		private const string SERVICE_BUS_QUEUE_NAME = "VideosToProcess";
+
 		private IRepository _repository;
 
 		public VideoHelper(IRepository repository)
@@ -23,6 +27,8 @@ namespace DevelopingWithWindowsAzure.Shared.Helper
 			// save the video to the database
 			_repository.InsertOrUpdateVideo(video);
 
+
+
 			// JCTODO move to storage helper class
 
 			// get a reference to the storage account
@@ -31,6 +37,8 @@ namespace DevelopingWithWindowsAzure.Shared.Helper
 
 			// create the blob client
 			var blobClient = storageAccount.CreateCloudBlobClient();
+
+			// JCTODO put the container name in the web.config???
 
 			// attempt to get a reference to the container
 			// and if it doesn't exist, create it
@@ -52,6 +60,24 @@ namespace DevelopingWithWindowsAzure.Shared.Helper
 			//{
 			//	blob.UploadFromStream(memoryStream);
 			//}
+
+
+
+			// get the service bus connection string
+			var serviceBusConnectionString = CloudConfigurationManager.GetSetting("ServiceBusConnectionString");
+
+			// get the namespace manager
+			var namespaceManager = NamespaceManager.CreateFromConnectionString(serviceBusConnectionString);
+
+			// create the queue if it doesn't exist
+			if (!namespaceManager.QueueExists(SERVICE_BUS_QUEUE_NAME))
+				namespaceManager.CreateQueue(SERVICE_BUS_QUEUE_NAME);
+
+			// get a queue client
+			var client = QueueClient.CreateFromConnectionString(serviceBusConnectionString, SERVICE_BUS_QUEUE_NAME);
+
+			// send the message
+			client.Send(new BrokeredMessage(video.VideoID));
 		}
 	}
 }
