@@ -1,4 +1,5 @@
 ﻿using DevelopingWithWindowsAzure.Shared.Entities;
+using Microsoft.WindowsAzure;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -10,7 +11,8 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 {
 	internal class Context : DbContext
 	{
-		public Context() : base("name=Database")
+		public Context()
+			: base(CloudConfigurationManager.GetSetting("DatabaseConnectionString"))
 		{
 		}
 

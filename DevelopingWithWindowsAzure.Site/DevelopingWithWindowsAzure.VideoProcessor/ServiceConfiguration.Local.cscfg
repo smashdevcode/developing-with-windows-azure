@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServiceConfiguration serviceName="DevelopingWithWindowsAzure.VideoProcessor" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="1" osVersion="*" schemaVersion="2012-05.1.7">
+  <Role name="VideoProcessorRole">
+    <Instances count="1" />
+    <ConfigurationSettings>
+			<Setting name="DatabaseConnectionString" value="Data Source=(LocalDb)\v11.0;Initial Catalog=DevelopingWithAzure;Integrated Security=true"/>
+			<Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
+      <Setting name="Microsoft.ServiceBus.ConnectionString" value="Endpoint=sb://developingwithazure.servicebus.windows.net/;SharedSecretIssuer=owner;SharedSecretValue=z9214eUotU8zTjO79FMAS+myrVuYwVA/PMOjiPHqV7M=" />
+    </ConfigurationSettings>
+  </Role>
+</ServiceConfiguration>
