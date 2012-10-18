@@ -47,7 +47,8 @@ namespace DevelopingWithWindowsAzure.Shared.Queue
 			if (VideosToProcessQueueClient != null)
 				return;
 
-			ServiceBusEnvironment.SystemConnectivity.Mode = ConnectivityMode.Http;
+			// JCTODO is this necessary to set??? okay to let it autodetect the ports???
+			//ServiceBusEnvironment.SystemConnectivity.Mode = ConnectivityMode.Http;
 
 			// create the queue if it doesn't exist
 			var namespaceManager = CreateNamespaceManager();

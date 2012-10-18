@@ -8,11 +8,14 @@ using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.StorageClient;
 using DevelopingWithWindowsAzure.Shared.Queue;
 using Microsoft.ServiceBus.Messaging;
+using DevelopingWithWindowsAzure.Shared.Storage;
 
 namespace DevelopingWithWindowsAzure.Shared.Helper
 {
 	public class VideoHelper
 	{
+		public const string VIDEOS_CONTAINER = "videos";
+
 		private IRepository _repository;
 
 		public VideoHelper(IRepository repository)
@@ -22,40 +25,24 @@ namespace DevelopingWithWindowsAzure.Shared.Helper
 
 		public void SaveVideo(Video video)
 		{
-			// save the video to the database
-			_repository.InsertOrUpdateVideo(video);
-
-			// JCTODO move to storage helper class
-
-			// get a reference to the storage account
-			var storageAccount = CloudStorageAccount.Parse(
-				CloudConfigurationManager.GetSetting("StorageConnectionString"));
-
-			// create the blob client
-			var blobClient = storageAccount.CreateCloudBlobClient();
-
-			// JCTODO put the container name in the web.config???
-
-			// attempt to get a reference to the container
-			// and if it doesn't exist, create it
-			var container = blobClient.GetContainerReference("videos");
-			container.CreateIfNotExist();
-
-			// set the permissions on the container so that blobs are visible to the public
-			container.SetPermissions(new BlobContainerPermissions() 
-			{
-				PublicAccess = BlobContainerPublicAccessType.Blob
-			});
-
 			// retrieve reference to the blob
-			var blob = container.GetBlobReference(video.FileName);
+			string newFileName = null;
+			var blob = StorageHelper.GetNewBlob(VIDEOS_CONTAINER, video.FileName, out newFileName);
 
+			// update the file name if it's been changed
+			if (video.FileName != newFileName)
+				video.FileName = newFileName;
+
+			// JCTODO move to another helper method???
 			// create the blob
 			blob.UploadFromStream(video.FileData);
 			//using (var memoryStream = new System.IO.MemoryStream(video.FileData))
 			//{
 			//	blob.UploadFromStream(memoryStream);
 			//}
+
+			// save the video to the database
+			_repository.InsertOrUpdateVideo(video);
 
 			// send the message
 			var client = QueueConnector.GetQueueClient();

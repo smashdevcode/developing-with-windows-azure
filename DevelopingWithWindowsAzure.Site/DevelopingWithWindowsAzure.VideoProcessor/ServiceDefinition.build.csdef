@@ -15,6 +15,7 @@
     </Imports>
     <ConfigurationSettings>
       <Setting name="DatabaseConnectionString" />
+      <Setting name="StorageConnectionString" />
       <Setting name="Microsoft.ServiceBus.ConnectionString" />
     </ConfigurationSettings>
   </WorkerRole>
