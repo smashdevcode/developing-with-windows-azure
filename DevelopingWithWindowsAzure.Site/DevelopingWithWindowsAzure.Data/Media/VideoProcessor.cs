@@ -10,15 +10,15 @@ using DevelopingWithWindowsAzure.Shared.Queue;
 using Microsoft.ServiceBus.Messaging;
 using DevelopingWithWindowsAzure.Shared.Storage;
 
-namespace DevelopingWithWindowsAzure.Shared.Helper
+namespace DevelopingWithWindowsAzure.Shared.Media
 {
-	public class VideoHelper
+	public class VideoProcessor
 	{
 		public const string VIDEOS_CONTAINER = "videos";
 
 		private IRepository _repository;
 
-		public VideoHelper(IRepository repository)
+		public VideoProcessor(IRepository repository)
 		{
 			_repository = repository;
 		}
@@ -27,7 +27,7 @@ namespace DevelopingWithWindowsAzure.Shared.Helper
 		{
 			// retrieve reference to the blob
 			string newFileName = null;
-			var blob = StorageHelper.GetNewBlob(VIDEOS_CONTAINER, video.FileName, out newFileName);
+			var blob = BlobStorage.GetNewBlob(VIDEOS_CONTAINER, video.FileName, out newFileName);
 
 			// update the file name if it's been changed
 			if (video.FileName != newFileName)

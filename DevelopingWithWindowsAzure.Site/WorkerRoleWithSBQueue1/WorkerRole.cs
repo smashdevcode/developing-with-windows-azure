@@ -16,7 +16,7 @@ using Microsoft.WindowsAzure.MediaServices.Client;
 using DevelopingWithWindowsAzure.Shared.Entities;
 using System.IO;
 using DevelopingWithWindowsAzure.Shared.Storage;
-using DevelopingWithWindowsAzure.Shared.Helper;
+using DevelopingWithWindowsAzure.Shared.Media;
 using DevelopingWithWindowsAzure.Shared.Enums;
 
 namespace WorkerRoleWithSBQueue1
@@ -24,6 +24,7 @@ namespace WorkerRoleWithSBQueue1
 	public class WorkerRole : RoleEntryPoint
 	{
 		private QueueClient _queueClient = null;
+		private MediaServices _mediaServices = null;
 		private bool _isStopped = true;
 
 		public override void Run()
@@ -63,7 +64,7 @@ namespace WorkerRoleWithSBQueue1
 
 									// JCTODO update method to throw specific exceptions???
 									// if the asset or source file is not found, then update the message to be a dead letter
-									CreateEncodingJob(video);
+									_mediaServices.CreateEncodingJob(video);
 
 									video.VideoStatusEnum = VideoStatus.Processed;
 									repository.InsertOrUpdateVideo(video);
@@ -113,6 +114,7 @@ namespace WorkerRoleWithSBQueue1
 			ServicePointManager.DefaultConnectionLimit = 12;
 
 			_queueClient = QueueConnector.GetQueueClient();
+			_mediaServices = new MediaServices();
 			_isStopped = false;
 			return base.OnStart();
 		}
@@ -120,204 +122,205 @@ namespace WorkerRoleWithSBQueue1
 		{
 			_isStopped = true;
 			_queueClient.Close();
+			_mediaServices.Dispose();
 			base.OnStop();
 		}
 
-		// JCTODO move to configuration file
-		private const string MEDIA_SERVICES_ACCOUNT_NAME = "developingwithazure";
-		private const string MEDIA_SERVICES_ACCOUNT_KEY = "EqDLzcDnFGDGUXxqZ5M9PBvT2r+pT8Rf9RKqQvyXDUc=";
+		//// JCTODO move to configuration file
+		//private const string MEDIA_SERVICES_ACCOUNT_NAME = "developingwithazure";
+		//private const string MEDIA_SERVICES_ACCOUNT_KEY = "EqDLzcDnFGDGUXxqZ5M9PBvT2r+pT8Rf9RKqQvyXDUc=";
 
-		private static CloudMediaContext _mediaContext = null;
+		//private static CloudMediaContext _mediaContext = null;
 
-		private static CloudMediaContext GetMediaContext()
-		{
-			if (_mediaContext == null)
-				_mediaContext = new CloudMediaContext(MEDIA_SERVICES_ACCOUNT_NAME, MEDIA_SERVICES_ACCOUNT_KEY);
-			return _mediaContext;
-		}
-		private static IMediaProcessor GetMediaProcessor(string mediaProcessorName)
-		{
-			var mediaContext = GetMediaContext();
+		//private static CloudMediaContext GetMediaContext()
+		//{
+		//	if (_mediaContext == null)
+		//		_mediaContext = new CloudMediaContext(MEDIA_SERVICES_ACCOUNT_NAME, MEDIA_SERVICES_ACCOUNT_KEY);
+		//	return _mediaContext;
+		//}
+		//private static IMediaProcessor GetMediaProcessor(string mediaProcessorName)
+		//{
+		//	var mediaContext = GetMediaContext();
 
-			// query for a media processor to get a reference
-			var mediaProcessor = (from p in mediaContext.MediaProcessors
-								  where p.Name == mediaProcessorName
-								  select p).FirstOrDefault();
-			if (mediaProcessor == null)
-			{
-				throw new ArgumentException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
-					"Unknown processor", mediaProcessorName));
-			}
+		//	// query for a media processor to get a reference
+		//	var mediaProcessor = (from p in mediaContext.MediaProcessors
+		//						  where p.Name == mediaProcessorName
+		//						  select p).FirstOrDefault();
+		//	if (mediaProcessor == null)
+		//	{
+		//		throw new ArgumentException(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+		//			"Unknown processor", mediaProcessorName));
+		//	}
 
-			return mediaProcessor;
-		}
-		private static void CreateEncodingJob(Video video)
-		{
-			var mediaContext = GetMediaContext();
-
-
+		//	return mediaProcessor;
+		//}
+		//private static void CreateEncodingJob(Video video)
+		//{
+		//	var mediaContext = GetMediaContext();
 
 
-			// create an empty asset
-			IAsset asset = mediaContext.Assets.CreateEmptyAsset(
-				string.Format("Asset_VideoID_{0}", video.VideoID), AssetCreationOptions.None);
 
-			// create a locator to get the SAS URL
-			IAccessPolicy writePolicy = mediaContext.AccessPolicies.Create("Policy For Copying", TimeSpan.FromMinutes(30), AccessPermissions.Write | AccessPermissions.List);
-			ILocator destinationLocator = mediaContext.Locators.CreateSasLocator(asset, writePolicy, DateTime.UtcNow.AddMinutes(-5));
 
-			////Create CloudBlobClient:
-			//var storageInfo = new StorageCredentialsAccountAndKey("YourStorageAccount", "YourStoragePassword");
-			//CloudBlobClient cloudClient = new CloudBlobClient("http://YourStorageAccount.blob.core.windows.net", storageInfo);
+		//	// create an empty asset
+		//	IAsset asset = mediaContext.Assets.CreateEmptyAsset(
+		//		string.Format("Asset_VideoID_{0}", video.VideoID), AssetCreationOptions.None);
 
-			//// get a blob client
-			//var blobClient = StorageHelper.GetClient();
+		//	// create a locator to get the SAS URL
+		//	IAccessPolicy writePolicy = mediaContext.AccessPolicies.Create("Policy For Copying", TimeSpan.FromMinutes(30), AccessPermissions.Write | AccessPermissions.List);
+		//	ILocator destinationLocator = mediaContext.Locators.CreateSasLocator(asset, writePolicy, DateTime.UtcNow.AddMinutes(-5));
+
+		//	////Create CloudBlobClient:
+		//	//var storageInfo = new StorageCredentialsAccountAndKey("YourStorageAccount", "YourStoragePassword");
+		//	//CloudBlobClient cloudClient = new CloudBlobClient("http://YourStorageAccount.blob.core.windows.net", storageInfo);
+
+		//	//// get a blob client
+		//	//var blobClient = StorageHelper.GetClient();
 	
-			// create the reference to the destination container
-			var destinationFileUrl = new Uri(destinationLocator.Path);
-			var destinationContainerName = destinationFileUrl.Segments[1];
-			//var destinationContainer = StorageHelper.GetContainer(destinationContainerName);
+		//	// create the reference to the destination container
+		//	var destinationFileUrl = new Uri(destinationLocator.Path);
+		//	var destinationContainerName = destinationFileUrl.Segments[1];
+		//	//var destinationContainer = StorageHelper.GetContainer(destinationContainerName);
 
-			//// create the reference to the source container
-			//var sourceContainer = StorageHelper.GetContainer(VideoHelper.VIDEOS_CONTAINER);
+		//	//// create the reference to the source container
+		//	//var sourceContainer = StorageHelper.GetContainer(VideoHelper.VIDEOS_CONTAINER);
 
-			// get and validate the source blob, in this case a file called FileToCopy.mp4:
-			//CloudBlob sourceFileBlob = sourceContainer.GetBlobReference("FileToCopy.mp4");
-			var sourceFileBlob = StorageHelper.GetBlob(VideoHelper.VIDEOS_CONTAINER, video.FileName);
-			sourceFileBlob.FetchAttributes();
-			var sourceLength = sourceFileBlob.Properties.Length;
-			System.Diagnostics.Debug.Assert(sourceLength > 0);
+		//	// get and validate the source blob, in this case a file called FileToCopy.mp4:
+		//	//CloudBlob sourceFileBlob = sourceContainer.GetBlobReference("FileToCopy.mp4");
+		//	var sourceFileBlob = BlobStorage.GetBlob(VideoProcessor.VIDEOS_CONTAINER, video.FileName);
+		//	sourceFileBlob.FetchAttributes();
+		//	var sourceLength = sourceFileBlob.Properties.Length;
+		//	System.Diagnostics.Debug.Assert(sourceLength > 0);
 
-			// if we got here then we can assume the source is valid and accessible
+		//	// if we got here then we can assume the source is valid and accessible
 
-			// create destination blob for copy, in this case, we choose to rename the file
-			//CloudBlob destinationFileBlob = destinationContainer.GetBlobReference("CopiedFile.mp4");
-			var destinationFileBlob = StorageHelper.GetBlob(destinationContainerName, video.FileName);
-			destinationFileBlob.CopyFromBlob(sourceFileBlob);  // will fail here if project references are bad (the are lazy loaded)
+		//	// create destination blob for copy, in this case, we choose to rename the file
+		//	//CloudBlob destinationFileBlob = destinationContainer.GetBlobReference("CopiedFile.mp4");
+		//	var destinationFileBlob = BlobStorage.GetBlob(destinationContainerName, video.FileName);
+		//	destinationFileBlob.CopyFromBlob(sourceFileBlob);  // will fail here if project references are bad (the are lazy loaded)
 
-			// check destination blob
-			destinationFileBlob.FetchAttributes();
-			System.Diagnostics.Debug.Assert(sourceFileBlob.Properties.Length == sourceLength);
+		//	// check destination blob
+		//	destinationFileBlob.FetchAttributes();
+		//	System.Diagnostics.Debug.Assert(sourceFileBlob.Properties.Length == sourceLength);
 
-			// if we got here then the copy worked
+		//	// if we got here then the copy worked
 
-			// publish the asset
-			asset.Publish();
-			asset = RefreshAsset(asset);
-
-
+		//	// publish the asset
+		//	asset.Publish();
+		//	asset = RefreshAsset(asset);
 
 
 
-			//// create an unencrypted asset and upload to storage
-			//IAsset asset = mediaContext.Assets.Create(inputMediaFilePath, AssetCreationOptions.None);
 
-			// declare a new job
-			IJob job = mediaContext.Jobs.Create(string.Format("EncodingJob_VideoID_{0}", video.VideoID));
 
-			// get a media processor reference, and pass to it the name of the 
-			// processor to use for the specific task
-			IMediaProcessor processor = GetMediaProcessor("Windows Azure Media Encoder");
+		//	//// create an unencrypted asset and upload to storage
+		//	//IAsset asset = mediaContext.Assets.Create(inputMediaFilePath, AssetCreationOptions.None);
 
-			// create a task with the encoding details, using a string preset
-			ITask task = job.Tasks.AddNew(
-				string.Format("EncodingTask_H264_VideoID_{0}", video.VideoID),
-				processor,
-				"H.264 256k DSL CBR",
-				TaskCreationOptions.None);
+		//	// declare a new job
+		//	IJob job = mediaContext.Jobs.Create(string.Format("EncodingJob_VideoID_{0}", video.VideoID));
 
-			// Specify the input asset to be encoded
-			task.InputMediaAssets.Add(asset);
+		//	// get a media processor reference, and pass to it the name of the 
+		//	// processor to use for the specific task
+		//	IMediaProcessor processor = GetMediaProcessor("Windows Azure Media Encoder");
 
-			// add an output asset to contain the results of the job
-			task.OutputMediaAssets.AddNew(string.Format("{0} H264", video.FileName), 
-				true, AssetCreationOptions.None);
+		//	// create a task with the encoding details, using a string preset
+		//	ITask task = job.Tasks.AddNew(
+		//		string.Format("EncodingTask_H264_VideoID_{0}", video.VideoID),
+		//		processor,
+		//		"H.264 256k DSL CBR",
+		//		TaskCreationOptions.None);
 
-			// launch the job
-			job.Submit();
+		//	// Specify the input asset to be encoded
+		//	task.InputMediaAssets.Add(asset);
 
-			// checks job progress
-			CheckJobProgress(job.Id);
+		//	// add an output asset to contain the results of the job
+		//	task.OutputMediaAssets.AddNew(string.Format("{0} H264", video.FileName), 
+		//		true, AssetCreationOptions.None);
 
-			// get an updated job reference
-			// after waiting for the job on the thread in the CheckJobProgress method
-			job = GetJob(job.Id);
+		//	// launch the job
+		//	job.Submit();
 
-			// get a reference to the output asset from the job
-			IAsset outputAsset = job.OutputMediaAssets[0];
+		//	// checks job progress
+		//	CheckJobProgress(job.Id);
 
-			// set the class-level variable so you can retrieve the asset later
-			//_outputAssetID = outputAsset.Id;
+		//	// get an updated job reference
+		//	// after waiting for the job on the thread in the CheckJobProgress method
+		//	job = GetJob(job.Id);
 
-			// you can optionally get a SAS URL to the output asset
-			//string sasUrl = GetAssetSasUrl(outputAsset, TimeSpan.FromMinutes(30));
+		//	// get a reference to the output asset from the job
+		//	IAsset outputAsset = job.OutputMediaAssets[0];
 
-			// write the URL to a local file
-			// you can use the saved SAS URL to browse directly to the asset
-			//string outFilePath = Path.GetFullPath(outputFolder + @"\" + "SasUrl.txt");
-			//WriteToFile(outFilePath, sasUrl);		
-		}
-		private static IAsset RefreshAsset(IAsset asset)
-		{
-			var mediaContext = GetMediaContext();
+		//	// set the class-level variable so you can retrieve the asset later
+		//	//_outputAssetID = outputAsset.Id;
 
-			return (from a in mediaContext.Assets
-					where a.Id == asset.Id
-					select a).FirstOrDefault();
-		}
-		private static void CheckJobProgress(string jobID)
-		{
-			// flag to indicate when job state is finished
-			bool jobCompleted = false;
-			// expected polling interval in milliseconds
-			// adjust this interval as needed based on estimated job completion times
-			const int jobProgressInterval = 20000;
+		//	// you can optionally get a SAS URL to the output asset
+		//	//string sasUrl = GetAssetSasUrl(outputAsset, TimeSpan.FromMinutes(30));
 
-			while (!jobCompleted)
-			{
-				// get an updated reference to the job in case 
-				// reference gets 'stale' while thread waits
-				IJob theJob = GetJob(jobID);
+		//	// write the URL to a local file
+		//	// you can use the saved SAS URL to browse directly to the asset
+		//	//string outFilePath = Path.GetFullPath(outputFolder + @"\" + "SasUrl.txt");
+		//	//WriteToFile(outFilePath, sasUrl);		
+		//}
+		//private static IAsset RefreshAsset(IAsset asset)
+		//{
+		//	var mediaContext = GetMediaContext();
 
-				// check job and report state
-				switch (theJob.State)
-				{
-					case JobState.Finished:
-						jobCompleted = true;
-						Trace.WriteLine("Job finished...");
-						break;
-					case JobState.Queued:
-					case JobState.Scheduled:
-					case JobState.Processing:
-						Trace.WriteLine("Job state: " + theJob.State);
-						Trace.WriteLine("Please wait...");
-						break;
-					case JobState.Error:
-						throw new ApplicationException("Encoding task failed.");
-					default:
-						Trace.WriteLine(theJob.State.ToString());
-						break;
-				}
+		//	return (from a in mediaContext.Assets
+		//			where a.Id == asset.Id
+		//			select a).FirstOrDefault();
+		//}
+		//private static void CheckJobProgress(string jobID)
+		//{
+		//	// flag to indicate when job state is finished
+		//	bool jobCompleted = false;
+		//	// expected polling interval in milliseconds
+		//	// adjust this interval as needed based on estimated job completion times
+		//	const int jobProgressInterval = 20000;
 
-				// wait for the specified job interval before checking state again
-				Thread.Sleep(jobProgressInterval);
-			}
-		}
-		private static IJob GetJob(string jobID)
-		{
-			var mediaContext = GetMediaContext();
+		//	while (!jobCompleted)
+		//	{
+		//		// get an updated reference to the job in case 
+		//		// reference gets 'stale' while thread waits
+		//		IJob theJob = GetJob(jobID);
 
-			var job = (from j in mediaContext.Jobs
-					  where j.Id == jobID
-					  select j).FirstOrDefault();
+		//		// check job and report state
+		//		switch (theJob.State)
+		//		{
+		//			case JobState.Finished:
+		//				jobCompleted = true;
+		//				Trace.WriteLine("Job finished...");
+		//				break;
+		//			case JobState.Queued:
+		//			case JobState.Scheduled:
+		//			case JobState.Processing:
+		//				Trace.WriteLine("Job state: " + theJob.State);
+		//				Trace.WriteLine("Please wait...");
+		//				break;
+		//			case JobState.Error:
+		//				throw new ApplicationException("Encoding task failed.");
+		//			default:
+		//				Trace.WriteLine(theJob.State.ToString());
+		//				break;
+		//		}
 
-			// confirm whether job exists, and return
-			if (job != null)
-				return job;
-			else
-				Trace.WriteLine("Job does not exist.");
-			return null;
-		}
+		//		// wait for the specified job interval before checking state again
+		//		Thread.Sleep(jobProgressInterval);
+		//	}
+		//}
+		//private static IJob GetJob(string jobID)
+		//{
+		//	var mediaContext = GetMediaContext();
+
+		//	var job = (from j in mediaContext.Jobs
+		//			  where j.Id == jobID
+		//			  select j).FirstOrDefault();
+
+		//	// confirm whether job exists, and return
+		//	if (job != null)
+		//		return job;
+		//	else
+		//		Trace.WriteLine("Job does not exist.");
+		//	return null;
+		//}
 		//private static String GetAssetSasUrl(IAsset asset, TimeSpan accessPolicyTimeout)
 		//{
 		//	// Create a policy for the asset.

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace DevelopingWithWindowsAzure.Shared.Storage
 {
-	public class StorageHelper
+	public class BlobStorage
 	{
 		// JCTODO
 

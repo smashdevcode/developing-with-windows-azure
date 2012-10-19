@@ -1,6 +1,6 @@
 ﻿using DevelopingWithWindowsAzure.Shared.Data;
 using DevelopingWithWindowsAzure.Shared.Entities;
-using DevelopingWithWindowsAzure.Shared.Helper;
+using DevelopingWithWindowsAzure.Shared.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 			video.AddedOn = DateTime.UtcNow;
 			video.VideoStatusEnum = Shared.Enums.VideoStatus.Uploaded;
 
-			var videoHelper = new VideoHelper(_repository);
+			var videoHelper = new VideoProcessor(_repository);
 			videoHelper.SaveVideo(video);
 
 			return RedirectToAction("Index");
