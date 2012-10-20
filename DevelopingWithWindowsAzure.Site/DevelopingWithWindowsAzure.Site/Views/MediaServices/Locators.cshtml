@@ -1,0 +1,13 @@
+﻿@model IEnumerable<Microsoft.WindowsAzure.MediaServices.Client.ILocator>
+
+@{
+    ViewBag.Title = "Media Services | Locators";
+}
+
+<h2>Media Services</h2>
+
+@Html.RenderSubMenu("MediaServices")
+
+<h3>Locators</h3>
+
+@Html.RenderGrid(Model, deleteAction: (item => Url.Action("DeleteLocator", new { id=item.Id })))

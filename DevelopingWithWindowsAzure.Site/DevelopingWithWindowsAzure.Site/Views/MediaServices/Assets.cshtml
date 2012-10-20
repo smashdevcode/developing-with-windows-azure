@@ -1,0 +1,22 @@
+﻿@model IEnumerable<Microsoft.WindowsAzure.MediaServices.Client.IAsset>
+
+@{
+    ViewBag.Title = "Media Services | Assets";
+}
+
+<h2>Media Services</h2>
+
+@Html.RenderSubMenu("MediaServices")
+
+<h3>Assets</h3>
+
+@Html.RenderGrid(Model, 
+	extraColumns: new List<GridColumn<Microsoft.WindowsAzure.MediaServices.Client.IAsset>>() 
+		{
+			new GridColumn<Microsoft.WindowsAzure.MediaServices.Client.IAsset>()
+			{
+				Header = "File Count", 
+				Value = item => Html.DisplayFor(modelItem => item.Files.Count)
+			}
+		},
+	deleteAction: (item => Url.Action("DeleteAsset", new { id=item.Id })))

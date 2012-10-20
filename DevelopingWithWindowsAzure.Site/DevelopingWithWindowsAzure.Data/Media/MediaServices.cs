@@ -22,9 +22,44 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			_context = new CloudMediaContext(MEDIA_SERVICES_ACCOUNT_NAME, MEDIA_SERVICES_ACCOUNT_KEY);
 		}
 
+		#region Context Collections
 		public List<IAsset> GetAssets()
 		{
 			return _context.Assets.ToList();
+		}
+		public List<IContentKey> GetContentKeys()
+		{
+			return _context.ContentKeys.ToList();
+		}
+		public List<IFileInfo> GetFiles()
+		{
+			return _context.Files.ToList();
+		}
+		public List<IJob> GetJobs()
+		{
+			return _context.Jobs.ToList();
+		}
+		public List<ILocator> GetLocators()
+		{
+			return _context.Locators.ToList();
+		}
+		public List<IMediaProcessor> GetMediaProcessors()
+		{
+			return _context.MediaProcessors.ToList();
+		}
+		#endregion
+		#region Assets
+		private IAsset GetAsset(string assetID)
+		{
+			var asset = (from a in _context.Assets
+						 where a.Id == assetID
+						 select a).FirstOrDefault();
+			// confirm whether asset exists, and return
+			if (asset != null)
+				return asset;
+			else
+				Trace.WriteLine(string.Format("Asset does not exist: {0}", assetID));
+			return null;
 		}
 		public void DeleteAsset(string assetID)
 		{
@@ -34,9 +69,17 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 				var locators = _context.Locators.Where(l => l.AssetId == assetID);
 				foreach (var l in locators)
 					_context.Locators.Revoke(l);
+
+				//var numberOfContentKeys = asset.ContentKeys.Count();
+				//for (int i = 0; i < numberOfContentKeys; i++)
+				//	asset.ContentKeys.RemoveAt(i);
+				foreach (var contentKey in asset.ContentKeys)
+					_context.ContentKeys.Delete(contentKey);
+
 				_context.Assets.Delete(asset);
 			}
 		}
+		#endregion
 		public void CreateEncodingJob(Video video)
 		{
 			// JCTODO put into a method to get a new asset for a video???
@@ -135,18 +178,6 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			if (mediaProcessor == null)
 				throw new ArgumentException(string.Format("Unknown processor: {0}", mediaProcessorName));
 			return mediaProcessor;
-		}
-		private IAsset GetAsset(string assetID)
-		{
-			var asset = (from a in _context.Assets
-						 where a.Id == assetID
-						 select a).FirstOrDefault();
-			// confirm whether asset exists, and return
-			if (asset != null)
-				return asset;
-			else
-				Trace.WriteLine(string.Format("Asset does not exist: {0}", assetID));
-			return null;
 		}
 		private IJob GetJob(string jobID)
 		{
