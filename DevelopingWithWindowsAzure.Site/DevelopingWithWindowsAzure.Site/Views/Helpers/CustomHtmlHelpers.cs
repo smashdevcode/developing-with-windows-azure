@@ -9,37 +9,81 @@ using System.Web.Mvc.Html;
 
 namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 {
-	public class GridColumn<T> where T : class
+	public class GridColumn<TModel> where TModel : class
 	{
 		public string Header { get; set; }
-		public Func<T, MvcHtmlString> Value { get; set; }
+		public Func<TModel, MvcHtmlString> Value { get; set; }
 	}
 	public static class CustomHtmlHelpers
 	{
-		#region RenderGrid
-		public static MvcHtmlString RenderGrid<TModel>(this HtmlHelper html, IEnumerable<TModel> items, 
-			List<string> propertyNamesToIgnore = null,
-			List<GridColumn<TModel>> extraColumns = null,
-			Func<TModel, string> detailsAction = null, 
-			Func<TModel, string> deleteAction = null) where TModel : class
+		#region RenderDetails
+		public static MvcHtmlString RenderDetails<TModel>(this HtmlHelper html, TModel item) where TModel : class
 		{
+			var url = new UrlHelper(html.ViewContext.RequestContext);
+			var propertiesToDisplay = GetDisplayProperties<TModel>();
+			var sb = new StringBuilder();
+
+			sb.AppendLine("<form class=\"form-horizontal\">");
+			sb.AppendLine("<fieldset>");
+			sb.AppendLine("<legend>Details</legend>");
+
+			foreach (var property in propertiesToDisplay)
+			{
+				sb.AppendLine("<div class=\"control-group\">");
+				sb.AppendFormat("<label class=\"control-label\" for=\"input{0}\">{0}</label>", property.Name);
+				sb.AppendLine("<div class=\"controls\">");
+				sb.AppendFormat("<input type=\"text\" id=\"input{0}\" value=\"{1}\" class=\"input-xxlarge uneditable-input\"/>", property.Name, 
+					html.AttributeEncode(property.GetValue(item, null)));
+				sb.AppendLine("</div>");
+				sb.AppendLine("</div>");
+			}
+
+			sb.AppendLine("</fieldset>");
+			sb.AppendLine("</form>");
+
+			return MvcHtmlString.Create(sb.ToString());
+		}
+		#endregion
+		#region RenderGrid
+		public static MvcHtmlString RenderGrid<TModel>(this HtmlHelper html, IEnumerable<TModel> items,
+			List<string> propertyNamesToIgnore = null,
+			string header = null,
+			List<GridColumn<TModel>> extraColumns = null,
+			Func<TModel, string> detailsAction = null,
+			Func<TModel, string> otherAction = null,
+			string otherActionText = null,
+			Func<TModel, string> deleteAction = null,
+			string deleteActionText = "Delete") where TModel : class
+		{
+			if (items.Count() == 0)
+				return MvcHtmlString.Empty;
+
 			var url = new UrlHelper(html.ViewContext.RequestContext);
 			var propertiesToDisplay = GetDisplayProperties<TModel>(propertyNamesToIgnore);
 			var sb = new StringBuilder();
+
+			if (header != null)
+			{
+				sb.AppendLine("<form>");
+				sb.AppendLine("<fieldset>");
+				sb.AppendFormat("<legend>{0}</legend{1}", header, Environment.NewLine);
+				sb.AppendLine("</fieldset>");
+				sb.AppendLine("</form>");
+			}
 
 			sb.AppendLine("<table class=\"table table-striped table-bordered table-hover table-condensed\">");
 
 			sb.AppendLine("<thead>");
 			sb.AppendLine("<tr>");
-			foreach(var property in propertiesToDisplay)
+			if (detailsAction != null | deleteAction != null)
+				sb.AppendLine("<th style=\"width: 150px\"></th>");
+			foreach (var property in propertiesToDisplay)
 				sb.AppendFormat("<th>{0}</th>{1}", property.Name, Environment.NewLine);
 			if (extraColumns != null)
 			{
 				foreach (var column in extraColumns)
 					sb.AppendFormat("<th>{0}</th>{1}", column.Header, Environment.NewLine);
 			}
-			if (detailsAction != null | deleteAction != null)
-				sb.AppendLine("<th></th>");
 			sb.AppendLine("</tr>");
 			sb.AppendLine("</thead>");
 
@@ -47,6 +91,24 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 			foreach (var item in items)
 			{
 				sb.AppendLine("<tr>");
+				if (detailsAction != null | deleteAction != null)
+				{
+					sb.Append("<td>");
+					if (detailsAction != null)
+						sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-info btn-mini\">Details</a>&nbsp;",
+							html.AttributeEncode(detailsAction(item)));
+					if (otherAction != null)
+					{
+						if (otherActionText == null)
+							throw new ApplicationException("Please provide a value for the otherActionText parameter.");
+						sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
+							html.AttributeEncode(otherAction(item)), otherActionText);
+					}
+					if (deleteAction != null)
+						sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-danger btn-mini\">{1}</a>&nbsp;",
+							html.AttributeEncode(deleteAction(item)), deleteActionText);
+					sb.Append("</td>");
+				}
 				foreach (var property in propertiesToDisplay)
 					sb.AppendFormat("<td>{0}</td>{1}", property.GetValue(item, null), Environment.NewLine);
 				if (extraColumns != null)
@@ -54,22 +116,13 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 					foreach (var column in extraColumns)
 						sb.AppendFormat("<td>{0}</td>{1}", column.Value(item), Environment.NewLine);
 				}
-				if (detailsAction != null | deleteAction != null)
-				{
-					sb.Append("<td>");
-					if (detailsAction != null)
-						sb.AppendFormat("<a href=\"{0}\">Details</a>&nbsp;", detailsAction(item));
-					if (deleteAction != null)
-						sb.AppendFormat("<a href=\"{0}\">Delete</a>&nbsp;", deleteAction(item));
-					sb.Append("</td>");
-				}
 				sb.AppendLine("</tr>");
 			}
 			sb.AppendLine("</tbody>");
 
 			sb.AppendLine("</table>");
 
-			return new MvcHtmlString(sb.ToString());
+			return MvcHtmlString.Create(sb.ToString());
 		}
 		private static List<PropertyInfo> GetDisplayProperties<T>(List<string> propertyNamesToIgnore = null)
 		{
@@ -108,13 +161,13 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 				default:
 					throw new ApplicationException("Unexpected controller name: " + controllerName);
 			}
-			return new MvcHtmlString(sb.ToString());
+			return MvcHtmlString.Create(sb.ToString());
 		}
 		private static string GetSubMenuItem(HtmlHelper html, UrlHelper url, string linkText, string actionName, string controllerName)
 		{
 			string currentAction = html.ViewContext.RouteData.GetRequiredString("action");
-			return string.Format("<li{2}><a href=\"{0}\">{1}</a></li>", 
-				url.Action(actionName, controllerName), 
+			return string.Format("<li{2}><a href=\"{0}\">{1}</a></li>",
+				html.AttributeEncode(url.Action(actionName, controllerName)),
 				linkText,
 				actionName == currentAction ? " class=\"active\"" : string.Empty);
 		}
@@ -134,7 +187,7 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 				lineItemBuilder.AddCssClass("active");
 			lineItemBuilder.InnerHtml = anchorBuilder.ToString();
 
-			return new MvcHtmlString(lineItemBuilder.ToString());
+			return MvcHtmlString.Create(lineItemBuilder.ToString());
 		}
 		#endregion
 	}

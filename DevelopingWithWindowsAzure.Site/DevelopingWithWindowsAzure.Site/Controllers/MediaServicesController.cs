@@ -11,9 +11,14 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
     {
         public ActionResult Assets()
         {
-			var assets = new MediaServices().GetAssets();
+			var assets = new MediaServices().GetAssets().OrderByDescending(a => a.Created).ToList();
             return View(assets);
         }
+		public ActionResult AssetDetails(string assetID)
+		{
+			var asset = new MediaServices().GetAsset(assetID);
+			return View(asset);
+		}
 		public ActionResult ContentKeys()
 		{
 			var contentKeys = new MediaServices().GetContentKeys();
@@ -28,6 +33,18 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 		{
 			var jobs = new MediaServices().GetJobs();
 			return View(jobs);
+		}
+		public ActionResult JobDetails(string jobID)
+		{
+			var job = new MediaServices().GetJob(jobID);
+			return View(job);
+		}
+		public ActionResult TaskDetails(string jobID, string taskID)
+		{
+			var job = new MediaServices().GetJob(jobID);
+			var task = job.Tasks.Where(t => t.Id == taskID).First();
+			ViewBag.JobID = jobID;
+			return View(task);
 		}
 		public ActionResult Locators()
 		{

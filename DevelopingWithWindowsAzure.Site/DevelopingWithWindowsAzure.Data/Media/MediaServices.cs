@@ -49,37 +49,44 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 		}
 		#endregion
 		#region Assets
-		private IAsset GetAsset(string assetID)
+		public IAsset GetAsset(string assetID)
 		{
 			var asset = (from a in _context.Assets
 						 where a.Id == assetID
 						 select a).FirstOrDefault();
-			// confirm whether asset exists, and return
-			if (asset != null)
-				return asset;
-			else
-				Trace.WriteLine(string.Format("Asset does not exist: {0}", assetID));
-			return null;
+			if (asset == null)
+				throw new ApplicationException("Unknown asset: " + assetID);
+			return asset;
 		}
 		public void DeleteAsset(string assetID)
 		{
 			var asset = GetAsset(assetID);
 			if (asset != null)
 			{
-				var locators = _context.Locators.Where(l => l.AssetId == assetID);
-				foreach (var l in locators)
-					_context.Locators.Revoke(l);
-
 				//var numberOfContentKeys = asset.ContentKeys.Count();
 				//for (int i = 0; i < numberOfContentKeys; i++)
 				//	asset.ContentKeys.RemoveAt(i);
 				foreach (var contentKey in asset.ContentKeys)
 					_context.ContentKeys.Delete(contentKey);
 
+				var locators = _context.Locators.Where(l => l.AssetId == assetID);
+				foreach (var l in locators)
+					_context.Locators.Revoke(l);
+
 				_context.Assets.Delete(asset);
 			}
 		}
 		#endregion
+		#region Jobs
+		public IJob GetJob(string jobID)
+		{
+			var job = (from j in _context.Jobs
+					   where j.Id == jobID
+					   select j).FirstOrDefault();
+			if (job == null)
+				throw new ApplicationException("Unknown job: " + jobID);
+			return job;
+		}
 		public void CreateEncodingJob(Video video)
 		{
 			// JCTODO put into a method to get a new asset for a video???
@@ -128,7 +135,7 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 
 			// get a media processor reference, and pass to it the name of the 
 			// processor to use for the specific task
-			var processor = GetMediaProcessor("Windows Azure Media Encoder");
+			var processor = GetMediaProcessorByName("Windows Azure Media Encoder");
 
 			// create a task with the encoding details, using a string preset
 			var task = job.Tasks.AddNew(
@@ -168,29 +175,18 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			//string outFilePath = Path.GetFullPath(outputFolder + @"\" + "SasUrl.txt");
 			//WriteToFile(outFilePath, sasUrl);		
 		}
-
-		private IMediaProcessor GetMediaProcessor(string mediaProcessorName)
+		#endregion
+		#region MediaProcessors
+		private IMediaProcessor GetMediaProcessorByName(string mediaProcessorName)
 		{
-			// query for a media processor to get a reference
 			var mediaProcessor = (from p in _context.MediaProcessors
 								  where p.Name == mediaProcessorName
 								  select p).FirstOrDefault();
 			if (mediaProcessor == null)
-				throw new ArgumentException(string.Format("Unknown processor: {0}", mediaProcessorName));
+				throw new ArgumentException(string.Format("Unknown media processor: {0}", mediaProcessorName));
 			return mediaProcessor;
 		}
-		private IJob GetJob(string jobID)
-		{
-			var job = (from j in _context.Jobs
-					   where j.Id == jobID
-					   select j).FirstOrDefault();
-			// confirm whether job exists, and return
-			if (job != null)
-				return job;
-			else
-				Trace.WriteLine(string.Format("Job does not exist: {0}", jobID));
-			return null;
-		}
+		#endregion
 		// JCTODO setup this method!!!
 		//private static String GetAssetSasUrl(IAsset asset, TimeSpan accessPolicyTimeout)
 		//{

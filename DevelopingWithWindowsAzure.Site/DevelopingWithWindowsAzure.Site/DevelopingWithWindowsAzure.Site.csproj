@@ -243,6 +243,9 @@
     <Content Include="Views\MediaServices\Jobs.cshtml" />
     <Content Include="Views\MediaServices\Locators.cshtml" />
     <Content Include="Views\MediaServices\MediaProcessors.cshtml" />
+    <Content Include="Views\MediaServices\AssetDetails.cshtml" />
+    <Content Include="Views\MediaServices\JobDetails.cshtml" />
+    <Content Include="Views\MediaServices\TaskDetails.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

@@ -8,4 +8,5 @@
 
 <h3>Files</h3>
 
-@Html.RenderGrid(Model, deleteAction: (item => Url.Action("DeleteFile", new { id=item.Id })))
+@Html.RenderGrid(Model, deleteAction: (item => Url.Action("FileDelete", new { fileid=item.Id })),
+	otherAction: (item => Url.Action("FileDownload", new { fileid=item.Id })), otherActionText: "Download")

@@ -1,0 +1,20 @@
+﻿@model Microsoft.WindowsAzure.MediaServices.Client.IAsset
+
+@{
+    ViewBag.Title = "Media Services | Asset Details";
+}
+
+<h3>Asset Details</h3>
+
+<p>@Html.ActionLink("Return to List", "Assets", null, new { @class = "btn btn-primary" })</p>
+
+@Html.RenderDetails(Model)
+
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IContentKey>(Model.ContentKeys, header: "Content Keys"))
+
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IFileInfo>(Model.Files, header: "Files"))
+
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.ILocator>(Model.Locators, header: "Locators"))
+
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IAsset>(Model.ParentAssets, header: "Parent Assets", 
+	detailsAction: (item => Url.Action("AssetDetails", new { assetid=item.Id }))))

@@ -17,4 +17,5 @@
 				Value = item => Html.DisplayFor(modelItem => item.Files.Count)
 			}
 		},
-	deleteAction: (item => Url.Action("DeleteAsset", new { id=item.Id })))
+	detailsAction: (item => Url.Action("AssetDetails", new { assetid=item.Id })),
+	deleteAction: (item => Url.Action("AssetDelete", new { assetid=item.Id })))

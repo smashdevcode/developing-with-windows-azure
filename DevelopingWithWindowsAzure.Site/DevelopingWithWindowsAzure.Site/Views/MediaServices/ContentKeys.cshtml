@@ -9,4 +9,4 @@
 <h3>Content Keys</h3>
 
 @Html.RenderGrid(Model, new List<string>() { "EncryptedContentKey" }, 
-	deleteAction: (item => Url.Action("DeleteContentKey", new { id=item.Id })))
+	deleteAction: (item => Url.Action("ContentKeyDelete", new { contentkeyid=item.Id })))
