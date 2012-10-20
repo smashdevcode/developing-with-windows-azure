@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Mvc.Html;
 
 namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 {
@@ -26,7 +27,7 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 			var propertiesToDisplay = GetDisplayProperties<TModel>(propertyNamesToIgnore);
 			var sb = new StringBuilder();
 
-			sb.AppendLine("<table>");
+			sb.AppendLine("<table class=\"table table-striped table-bordered table-hover table-condensed\">");
 
 			sb.AppendLine("<thead>");
 			sb.AppendLine("<tr>");
@@ -95,13 +96,13 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 			switch (controllerName)
 			{
 				case "MediaServices":
-					sb.AppendLine("<ul>");
-					sb.AppendLine(GetSubMenuItem(url, "Assets", "Assets", controllerName));
-					sb.AppendLine(GetSubMenuItem(url, "Content Keys", "ContentKeys", controllerName));
-					sb.AppendLine(GetSubMenuItem(url, "Files", "Files", controllerName));
-					sb.AppendLine(GetSubMenuItem(url, "Jobs", "Jobs", controllerName));
-					sb.AppendLine(GetSubMenuItem(url, "Locators", "Locators", controllerName));
-					sb.AppendLine(GetSubMenuItem(url, "Media Processors", "MediaProcessors", controllerName));
+					sb.AppendLine("<ul class=\"nav nav-pills\">");
+					sb.AppendLine(GetSubMenuItem(html, url, "Assets", "Assets", controllerName));
+					sb.AppendLine(GetSubMenuItem(html, url, "Content Keys", "ContentKeys", controllerName));
+					sb.AppendLine(GetSubMenuItem(html, url, "Files", "Files", controllerName));
+					sb.AppendLine(GetSubMenuItem(html, url, "Jobs", "Jobs", controllerName));
+					sb.AppendLine(GetSubMenuItem(html, url, "Locators", "Locators", controllerName));
+					sb.AppendLine(GetSubMenuItem(html, url, "Media Processors", "MediaProcessors", controllerName));
 					sb.AppendLine("</ul>");
 					break;
 				default:
@@ -109,9 +110,31 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 			}
 			return new MvcHtmlString(sb.ToString());
 		}
-		private static string GetSubMenuItem(UrlHelper url, string linkText, string action, string controllerName)
+		private static string GetSubMenuItem(HtmlHelper html, UrlHelper url, string linkText, string actionName, string controllerName)
 		{
-			return string.Format("<li><a href=\"{0}\">{1}</a></li>", url.Action(action, controllerName), linkText);
+			string currentAction = html.ViewContext.RouteData.GetRequiredString("action");
+			return string.Format("<li{2}><a href=\"{0}\">{1}</a></li>", 
+				url.Action(actionName, controllerName), 
+				linkText,
+				actionName == currentAction ? " class=\"active\"" : string.Empty);
+		}
+		#endregion
+		#region MenuItem
+		public static MvcHtmlString MenuItem(this HtmlHelper html, string linkText, string actionName, string controllerName)
+		{
+			var url = new UrlHelper(html.ViewContext.RequestContext);
+			string currentController = html.ViewContext.RouteData.GetRequiredString("controller");
+
+			var anchorBuilder = new TagBuilder("a");
+			anchorBuilder.Attributes.Add("href", url.Action(actionName, controllerName));
+			anchorBuilder.InnerHtml = linkText;
+
+			var lineItemBuilder = new TagBuilder("li");
+			if (controllerName == currentController)
+				lineItemBuilder.AddCssClass("active");
+			lineItemBuilder.InnerHtml = anchorBuilder.ToString();
+
+			return new MvcHtmlString(lineItemBuilder.ToString());
 		}
 		#endregion
 	}
