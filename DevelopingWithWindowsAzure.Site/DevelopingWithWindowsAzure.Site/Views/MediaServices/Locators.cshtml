@@ -8,4 +8,5 @@
 
 <h3>Locators</h3>
 
-@Html.RenderGrid(Model, deleteAction: (item => Url.Action("LocatorDelete", new { locatorid=item.Id })), deleteActionText: "Revoke")
+@Html.RenderGrid("locators", Model, 
+	deleteAction: (item => Url.Action("LocatorDelete", new { locatorid=item.Id })), deleteActionText: "Revoke")

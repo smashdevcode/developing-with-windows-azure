@@ -6,11 +6,20 @@ using Microsoft.WindowsAzure.MediaServices.Client;
 using DevelopingWithWindowsAzure.Shared.Entities;
 using System.Diagnostics;
 using DevelopingWithWindowsAzure.Shared.Storage;
+using System.IO;
 
 namespace DevelopingWithWindowsAzure.Shared.Media
 {
 	public class MediaServices : IDisposable
 	{
+		public enum FileType
+		{
+			Unknown,
+			MP4,
+			WMV,
+			XML
+		}
+
 		// JCTODO move to configuration file
 		private const string MEDIA_SERVICES_ACCOUNT_NAME = "developingwithazure";
 		private const string MEDIA_SERVICES_ACCOUNT_KEY = "EqDLzcDnFGDGUXxqZ5M9PBvT2r+pT8Rf9RKqQvyXDUc=";
@@ -22,30 +31,48 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			_context = new CloudMediaContext(MEDIA_SERVICES_ACCOUNT_NAME, MEDIA_SERVICES_ACCOUNT_KEY);
 		}
 
+		public static FileType GetFileType(string fileName)
+		{
+			var fileExtension = Path.GetExtension(fileName);
+			if (string.IsNullOrEmpty(fileExtension))
+				return FileType.Unknown;
+			switch (fileExtension.ToLower())
+			{
+				case ".mp4":
+					return FileType.MP4;
+				case ".wmv":
+					return FileType.WMV;
+				case ".xml":
+					return FileType.XML;
+				default:
+					throw new ApplicationException("Unexpected file extension: " + fileExtension);
+			}
+		}
+
 		#region Context Collections
 		public List<IAsset> GetAssets()
 		{
-			return _context.Assets.ToList();
+			return _context.Assets.ToList().OrderByDescending(a => a.Created).ToList();
 		}
 		public List<IContentKey> GetContentKeys()
 		{
-			return _context.ContentKeys.ToList();
+			return _context.ContentKeys.ToList().OrderByDescending(ck => ck.Created).ToList();
 		}
 		public List<IFileInfo> GetFiles()
 		{
-			return _context.Files.ToList();
+			return _context.Files.ToList().OrderByDescending(f => f.Created).ToList();
 		}
 		public List<IJob> GetJobs()
 		{
-			return _context.Jobs.ToList();
+			return _context.Jobs.ToList().OrderByDescending(j => j.Created).ToList();
 		}
 		public List<ILocator> GetLocators()
 		{
-			return _context.Locators.ToList();
+			return _context.Locators.ToList().OrderBy(l => l.AssetId).OrderBy(l => l.ExpirationDateTime).ToList();
 		}
 		public List<IMediaProcessor> GetMediaProcessors()
 		{
-			return _context.MediaProcessors.ToList();
+			return _context.MediaProcessors.ToList().OrderBy(mp => mp.Name).ToList();
 		}
 		#endregion
 		#region Assets
@@ -63,28 +90,29 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			var asset = GetAsset(assetID);
 			if (asset != null)
 			{
+				foreach (var locator in asset.Locators)
+					_context.Locators.Revoke(locator);
+
 				//var numberOfContentKeys = asset.ContentKeys.Count();
 				//for (int i = 0; i < numberOfContentKeys; i++)
 				//	asset.ContentKeys.RemoveAt(i);
 				foreach (var contentKey in asset.ContentKeys)
 					_context.ContentKeys.Delete(contentKey);
 
-				var locators = _context.Locators.Where(l => l.AssetId == assetID);
-				foreach (var l in locators)
-					_context.Locators.Revoke(l);
-
 				_context.Assets.Delete(asset);
 			}
 		}
+		public string GetAssetSasUrl(IAsset asset, IFileInfo file)
+		{
+			return GetAssetSasUrl(asset, file, new TimeSpan(1, 0, 0));
+		}
 		public string GetAssetSasUrl(IAsset asset, IFileInfo file, TimeSpan accessPolicyTimeout)
 		{
-			// JCTODO do you need to delete the locator yourself?!?!?
-
 			// check to see if a locator is already available
 			// (that doesn't expire for another 30 minutes)
 			var locator = (from l in asset.Locators
 						   orderby l.ExpirationDateTime descending
-						   where l.ExpirationDateTime > DateTime.UtcNow
+						   where l.ExpirationDateTime > DateTime.UtcNow.AddMinutes(30)
 						   select l).FirstOrDefault();
 			if (locator == null)
 			{
@@ -113,6 +141,17 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 				return null;
 		}
 		#endregion
+		#region Content Keys
+		public void DeleteContentKey(string contentKeyID)
+		{
+			var contentKey = (from ck in _context.ContentKeys
+							  where ck.Id == contentKeyID
+							  select ck).FirstOrDefault();
+			if (contentKey == null)
+				throw new ApplicationException("Unknown content key: " + contentKeyID);
+			_context.ContentKeys.Delete(contentKey);
+		}
+		#endregion
 		#region Jobs
 		public IJob GetJob(string jobID)
 		{
@@ -122,6 +161,17 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			if (job == null)
 				throw new ApplicationException("Unknown job: " + jobID);
 			return job;
+		}
+		public void CancelJob(string jobID)
+		{
+			var job = GetJob(jobID);
+			if (job.State == JobState.Processing || job.State == JobState.Queued || job.State == JobState.Scheduled)
+				job.Cancel();
+		}
+		public void DeleteJob(string jobID)
+		{
+			var job = GetJob(jobID);
+			job.Delete();
 		}
 		public void CreateEncodingJob(Video video)
 		{

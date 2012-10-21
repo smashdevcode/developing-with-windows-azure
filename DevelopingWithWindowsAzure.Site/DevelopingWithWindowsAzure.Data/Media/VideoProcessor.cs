@@ -49,5 +49,16 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			// JCTODO move to a method on the QueueConnector class???
 			client.Send(new BrokeredMessage(video.VideoID));
 		}
+		public void DeleteVideo(int videoID)
+		{
+			// get the video
+			var video = _repository.GetVideo(videoID);
+
+			// delete the blob
+			BlobStorage.DeleteBlob(VIDEOS_CONTAINER, video.FileName);
+
+			// delete the video from the database
+			_repository.DeleteVideo(video);
+		}
 	}
 }

@@ -18,7 +18,7 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 
         public ActionResult Assets()
         {
-			var assets = this.MediaServices.GetAssets().OrderByDescending(a => a.Created).ToList();
+			var assets = this.MediaServices.GetAssets();
             return View(assets);
         }
 		public ActionResult AssetDetails(string assetID)
@@ -26,10 +26,25 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 			var asset = this.MediaServices.GetAsset(assetID);
 			return View(asset);
 		}
+		public ActionResult AssetDelete(string assetID)
+		{
+			this.MediaServices.DeleteAsset(assetID);
+			return RedirectToAction("Assets");
+		}
+		public ActionResult AssetLocatorDelete(string assetID, string locatorID)
+		{
+			this.MediaServices.RevokeLocator(locatorID);
+			return RedirectToAction("AssetDetails", new { assetid=assetID });
+		}
 		public ActionResult ContentKeys()
 		{
 			var contentKeys = this.MediaServices.GetContentKeys();
 			return View(contentKeys);
+		}
+		public ActionResult ContentKeyDelete(string contentKeyID)
+		{
+			this.MediaServices.DeleteContentKey(contentKeyID);
+			return RedirectToAction("ContentKeys");
 		}
 		public ActionResult Files()
 		{
@@ -45,6 +60,16 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 		{
 			var job = this.MediaServices.GetJob(jobID);
 			return View(job);
+		}
+		public ActionResult JobCancel(string jobID)
+		{
+			this.MediaServices.CancelJob(jobID);
+			return RedirectToAction("Jobs");
+		}
+		public ActionResult JobDelete(string jobID)
+		{
+			this.MediaServices.DeleteJob(jobID);
+			return RedirectToAction("Jobs");
 		}
 		public ActionResult TaskDetails(string jobID, string taskID)
 		{

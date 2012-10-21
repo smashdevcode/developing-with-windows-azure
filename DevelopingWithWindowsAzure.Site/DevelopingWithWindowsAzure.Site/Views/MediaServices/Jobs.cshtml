@@ -8,7 +8,7 @@
 
 <h3>Jobs</h3>
 
-@Html.RenderGrid(Model, 
+@Html.RenderGrid("jobs", Model, 
 	detailsAction: (item => Url.Action("JobDetails", new { jobid=item.Id })),
 	otherAction: (item => Url.Action("JobCancel", new { jobid=item.Id })),
 	otherActionText: "Cancel",

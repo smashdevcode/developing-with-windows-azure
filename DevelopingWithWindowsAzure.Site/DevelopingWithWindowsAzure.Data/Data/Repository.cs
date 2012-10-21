@@ -18,7 +18,7 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 
 		public List<Video> GetVideos()
 		{
-			return _context.Videos.ToList();
+			return _context.Videos.OrderByDescending(v => v.AddedOn).ToList();
 		}
 		public Video GetVideo(int videoID)
 		{
@@ -33,6 +33,11 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 		{
 			var video = new Video() { VideoID = videoID };
 			_context.Videos.Attach(video);
+			_context.Videos.Remove(video);
+			_context.SaveChanges();
+		}
+		public void DeleteVideo(Video video)
+		{
 			_context.Videos.Remove(video);
 			_context.SaveChanges();
 		}

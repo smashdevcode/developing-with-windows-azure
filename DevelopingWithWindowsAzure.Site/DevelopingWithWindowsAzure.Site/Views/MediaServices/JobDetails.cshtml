@@ -10,11 +10,11 @@
 
 @Html.RenderDetails(Model)
 
-@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IAsset>(Model.InputMediaAssets, header: "Input Media Assets",
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IAsset>("inputassets", Model.InputMediaAssets, header: "Input Media Assets",
 	detailsAction: (item => Url.Action("AssetDetails", new { assetid=item.Id }))))
 
-@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IAsset>(Model.OutputMediaAssets, header: "Output Media Assets",
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IAsset>("outputassets", Model.OutputMediaAssets, header: "Output Media Assets",
 	detailsAction: (item => Url.Action("AssetDetails", new { assetid=item.Id }))))
 
-@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.ITask>(Model.Tasks, header: "Tasks",
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.ITask>("tasks", Model.Tasks, header: "Tasks",
 	detailsAction: (item => Url.Action("TaskDetails", new { jobid=Model.Id, taskid=item.Id }))))

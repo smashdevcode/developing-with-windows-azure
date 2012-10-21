@@ -36,9 +36,15 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 			video.AddedOn = DateTime.UtcNow;
 			video.VideoStatusEnum = Shared.Enums.VideoStatus.Uploaded;
 
-			var videoHelper = new VideoProcessor(_repository);
-			videoHelper.SaveVideo(video);
+			var videoProcessor = new VideoProcessor(_repository);
+			videoProcessor.SaveVideo(video);
 
+			return RedirectToAction("Index");
+		}
+		public ActionResult Delete(int videoID)
+		{
+			var videoProcessor = new VideoProcessor(_repository);
+			videoProcessor.DeleteVideo(videoID);
 			return RedirectToAction("Index");
 		}
 	}

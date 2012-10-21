@@ -8,5 +8,5 @@
     @Html.ActionLink("Upload Video", "Upload", null, new { @class = "btn btn-primary" })
 </p>
 
-@Html.RenderGrid(Model, new List<string>() { "VideoID", "FileNameWithoutExtension", "Description", "VideoStatus" },
-	deleteAction: (item => Url.Action("DeleteVideo", new { id=item.VideoID })))
+@Html.RenderGrid("videos", Model, new List<string>() { "VideoID", "FileNameWithoutExtension", "Description", "VideoStatus" },
+	deleteAction: (item => Url.Action("Delete", new { videoid=item.VideoID })))

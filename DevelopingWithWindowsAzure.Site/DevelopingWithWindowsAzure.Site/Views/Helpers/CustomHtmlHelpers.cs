@@ -17,7 +17,9 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 	public static class CustomHtmlHelpers
 	{
 		#region RenderDetails
-		public static MvcHtmlString RenderDetails<TModel>(this HtmlHelper html, TModel item) where TModel : class
+		public static MvcHtmlString RenderDetails<TModel>(this HtmlHelper html, 
+			TModel item,
+			string fieldSize = "input-xxlarge") where TModel : class
 		{
 			var url = new UrlHelper(html.ViewContext.RequestContext);
 			var propertiesToDisplay = GetDisplayProperties<TModel>();
@@ -32,8 +34,10 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 				sb.AppendLine("<div class=\"control-group\">");
 				sb.AppendFormat("<label class=\"control-label\" for=\"input{0}\">{0}</label>", property.Name);
 				sb.AppendLine("<div class=\"controls\">");
-				sb.AppendFormat("<input type=\"text\" id=\"input{0}\" value=\"{1}\" class=\"input-xxlarge uneditable-input\"/>", property.Name, 
-					html.AttributeEncode(property.GetValue(item, null)));
+				sb.AppendFormat("<input type=\"text\" id=\"input{0}\" value=\"{1}\" class=\"{2} uneditable-input\"/>", 
+					property.Name, 
+					html.AttributeEncode(property.GetValue(item, null)),
+					fieldSize);
 				sb.AppendLine("</div>");
 				sb.AppendLine("</div>");
 			}
@@ -45,24 +49,32 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 		}
 		#endregion
 		#region RenderGrid
-		public static MvcHtmlString RenderGrid<TModel>(this HtmlHelper html, IEnumerable<TModel> items,
+		public static MvcHtmlString RenderGrid<TModel>(this HtmlHelper html, 
+			string idPrefix,
+			IEnumerable<TModel> items,
 			List<string> propertyNamesToIgnore = null,
 			string header = null,
+			string message = null,
 			List<GridColumn<TModel>> extraColumns = null,
 			Func<TModel, string> detailsAction = null,
 			Func<TModel, string> otherAction = null,
 			string otherActionText = null,
 			Func<TModel, string> deleteAction = null,
-			string deleteActionText = "Delete") where TModel : class
+			string deleteActionText = "Delete",
+			Func<TModel, string> additionalRowAttributes = null) where TModel : class
 		{
-			if (items.Count() == 0)
+			// enumerate the items
+			var itemsList = items.ToList();
+
+			// if we don't any items to display return an empty string
+			if (itemsList.Count == 0)
 				return MvcHtmlString.Empty;
 
 			var url = new UrlHelper(html.ViewContext.RequestContext);
 			var propertiesToDisplay = GetDisplayProperties<TModel>(propertyNamesToIgnore);
 			var sb = new StringBuilder();
 
-			if (header != null)
+			if (!string.IsNullOrEmpty(header))
 			{
 				sb.AppendLine("<form>");
 				sb.AppendLine("<fieldset>");
@@ -70,6 +82,9 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 				sb.AppendLine("</fieldset>");
 				sb.AppendLine("</form>");
 			}
+
+			if (!string.IsNullOrEmpty(message))
+				sb.AppendFormat("<p>{0}</p>{1}", message, Environment.NewLine);
 
 			sb.AppendLine("<table class=\"table table-striped table-bordered table-hover table-condensed\">");
 
@@ -88,9 +103,12 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 			sb.AppendLine("</thead>");
 
 			sb.AppendLine("<tbody>");
-			foreach (var item in items)
+			foreach (var item in itemsList)
 			{
-				sb.AppendLine("<tr>");
+				var rowAttributes = string.Empty;
+				if (additionalRowAttributes != null)
+					rowAttributes = additionalRowAttributes(item);
+				sb.AppendFormat("<tr{0}>{1}", !string.IsNullOrEmpty(rowAttributes) ? " " + rowAttributes : string.Empty, Environment.NewLine);
 				if (detailsAction != null || otherAction != null || deleteAction != null)
 				{
 					sb.Append("<td>");
@@ -102,16 +120,20 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 						if (otherActionText == null)
 							throw new ApplicationException("Please provide a value for the otherActionText parameter.");
 						var otherActionLink = otherAction(item);
-						if (otherActionLink.StartsWith("javascript:"))
-						{
-							sb.AppendFormat("<a href=\"#\" onclick=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
-								html.AttributeEncode(otherActionLink.Replace("javascript:", string.Empty)), otherActionText);
-						}
-						else
-						{
-							sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
-								html.AttributeEncode(otherActionLink), otherActionText);
-						}
+						sb.AppendFormat("<a id=\"{2}\" href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
+							html.AttributeEncode(otherActionLink), otherActionText, 
+							string.Format("{0}otherlink{1}", idPrefix, itemsList.IndexOf(item)));
+						// JCTODO remove???
+						//if (otherActionLink.StartsWith("javascript:"))
+						//{
+						//	sb.AppendFormat("<a href=\"#\" onclick=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
+						//		html.AttributeEncode(otherActionLink.Replace("javascript:", string.Empty)), otherActionText);
+						//}
+						//else
+						//{
+						//	sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
+						//		html.AttributeEncode(otherActionLink), otherActionText);
+						//}
 					}
 					if (deleteAction != null)
 						sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-danger btn-mini\">{1}</a>&nbsp;",
@@ -165,6 +187,12 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 					sb.AppendLine(GetSubMenuItem(html, url, "Jobs", "Jobs", controllerName));
 					sb.AppendLine(GetSubMenuItem(html, url, "Locators", "Locators", controllerName));
 					sb.AppendLine(GetSubMenuItem(html, url, "Media Processors", "MediaProcessors", controllerName));
+					sb.AppendLine("</ul>");
+					break;
+				case "Storage":
+					sb.AppendLine("<ul class=\"nav nav-pills\">");
+					sb.AppendLine(GetSubMenuItem(html, url, "Blobs", "Blobs", controllerName));
+					sb.AppendLine(GetSubMenuItem(html, url, "Containers", "Containers", controllerName));
 					sb.AppendLine("</ul>");
 					break;
 				default:
