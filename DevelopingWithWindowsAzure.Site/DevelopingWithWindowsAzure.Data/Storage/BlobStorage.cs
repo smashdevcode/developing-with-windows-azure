@@ -152,5 +152,23 @@ namespace DevelopingWithWindowsAzure.Shared.Storage
 				Trace.WriteLine(exc.Message);
 			}
 		}
+		public static string UploadBlob(string containerName, string fileName, Stream fileData)
+		{
+			return UploadBlob(containerName, fileName, fileData, DEFAULT_CONNECTION_STRING_NAME);
+		}
+		public static string UploadBlob(string containerName, string fileName, Stream fileData, string connectionStringName)
+		{
+			// retrieve reference to the blob
+			string newFileName = null;
+			var blob = BlobStorage.GetNewBlob(containerName, fileName, out newFileName);
+
+			// create the blob
+			blob.UploadFromStream(fileData);
+			//using (var memoryStream = new System.IO.MemoryStream(video.FileData))
+			//	blob.UploadFromStream(memoryStream);
+
+			// return the new file name
+			return newFileName;
+		}
 	}
 }

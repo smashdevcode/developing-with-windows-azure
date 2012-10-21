@@ -8,32 +8,17 @@ using System.Text;
 
 namespace DevelopingWithWindowsAzure.Shared.Queue
 {
-	// JCTODO rename as VideosToProcessQueue???
-	// JCTODO setup QueueConnector base class???
 	public static class QueueConnector
 	{
-		public static QueueClient VideosToProcessQueueClient;
-
-		// JCTODO move to config file???
-		//public const string Namespace = "developingwithazure";
-		//public const string IssuerName = "owner";
-		//public const string IssuerKey = "z9214eUotU8zTjO79FMAS+myrVuYwVA/PMOjiPHqV7M=";
-
-		private const string SERVICE_BUS_QUEUE_NAME = "VideosToProcess";
+		public static QueueClient QueueClient;
 
 		public static QueueClient GetQueueClient()
 		{
 			Initialize();
-			return VideosToProcessQueueClient;
+			return QueueClient;
 		}
 		public static NamespaceManager CreateNamespaceManager()
 		{
-			//var uri = ServiceBusEnvironment.CreateServiceUri(
-			//	"sb", Namespace, string.Empty);
-			//var tp = TokenProvider.CreateSharedSecretTokenProvider(
-			//	IssuerName, IssuerKey);
-			//return new NamespaceManager(uri, tp);
-
 			// get the service bus connection string
 			var serviceBusConnectionString = CloudConfigurationManager.GetSetting("Microsoft.ServiceBus.ConnectionString");
 
@@ -44,22 +29,29 @@ namespace DevelopingWithWindowsAzure.Shared.Queue
 		}
 		public static void Initialize()
 		{
-			if (VideosToProcessQueueClient != null)
+			if (QueueClient != null)
 				return;
+
+			// get the queue name
+			var queueName = CloudConfigurationManager.GetSetting("ServiceBusQueueName");
 
 			// JCTODO is this necessary to set??? okay to let it autodetect the ports???
 			//ServiceBusEnvironment.SystemConnectivity.Mode = ConnectivityMode.Http;
 
 			// create the queue if it doesn't exist
 			var namespaceManager = CreateNamespaceManager();
-			if (!namespaceManager.QueueExists(SERVICE_BUS_QUEUE_NAME))
-				namespaceManager.CreateQueue(SERVICE_BUS_QUEUE_NAME);
+			if (!namespaceManager.QueueExists(queueName))
+				namespaceManager.CreateQueue(queueName);
 
 			// initialize the queue client
 			var messagingFactory = MessagingFactory.Create(
 				namespaceManager.Address,
 				namespaceManager.Settings.TokenProvider);
-			VideosToProcessQueueClient = messagingFactory.CreateQueueClient(SERVICE_BUS_QUEUE_NAME);
+			QueueClient = messagingFactory.CreateQueueClient(queueName);
+		}
+		public static void SendMessage(object serializableObject)
+		{
+			GetQueueClient().Send(new BrokeredMessage(serializableObject));
 		}
 	}
 }

@@ -16,6 +16,7 @@
     <ConfigurationSettings>
       <Setting name="DatabaseConnectionString" />
       <Setting name="StorageConnectionString" />
+      <Setting name="ServiceBusQueueName" />
       <Setting name="Microsoft.ServiceBus.ConnectionString" />
     </ConfigurationSettings>
   </WorkerRole>

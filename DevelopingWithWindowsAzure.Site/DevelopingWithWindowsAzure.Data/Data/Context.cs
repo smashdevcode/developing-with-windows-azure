@@ -1,4 +1,5 @@
 ﻿using DevelopingWithWindowsAzure.Shared.Entities;
+using DevelopingWithWindowsAzure.Shared.Migrations;
 using Microsoft.WindowsAzure;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Text;
 
 namespace DevelopingWithWindowsAzure.Shared.Data
 {
-	internal class Context : DbContext
+	public class Context : DbContext
 	{
 		public Context()
 			: base(CloudConfigurationManager.GetSetting("DatabaseConnectionString"))
@@ -17,6 +18,7 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 		}
 
 		public DbSet<Video> Videos { get; set; }
+		public DbSet<VideoAsset> VideoAssets { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{

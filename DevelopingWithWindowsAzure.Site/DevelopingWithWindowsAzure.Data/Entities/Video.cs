@@ -9,6 +9,11 @@ namespace DevelopingWithWindowsAzure.Shared.Entities
 {
 	public class Video
 	{
+		public Video()
+		{
+			this.Assets = new List<VideoAsset>();
+		}
+
 		public int VideoID { get; set; }
 		public string FileName { get; set; }
 		public string FileNameWithoutExtension
@@ -31,5 +36,8 @@ namespace DevelopingWithWindowsAzure.Shared.Entities
 			set { this.VideoStatus = (int)value; }
 		}
 		public Stream FileData { get; set; }
+		public string MediaServicesJobID { get; set; }
+
+		public List<VideoAsset> Assets { get; set; }
 	}
 }

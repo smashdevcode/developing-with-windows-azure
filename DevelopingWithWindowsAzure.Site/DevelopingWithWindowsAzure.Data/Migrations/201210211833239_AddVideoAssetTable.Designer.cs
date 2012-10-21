@@ -5,13 +5,13 @@ namespace DevelopingWithWindowsAzure.Shared.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class initial : IMigrationMetadata
+    public sealed partial class AddVideoAssetTable : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(initial));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddVideoAssetTable));
         
         string IMigrationMetadata.Id
         {
-            get { return "201210080035008_initial"; }
+            get { return "201210211833239_AddVideoAssetTable"; }
         }
         
         string IMigrationMetadata.Source

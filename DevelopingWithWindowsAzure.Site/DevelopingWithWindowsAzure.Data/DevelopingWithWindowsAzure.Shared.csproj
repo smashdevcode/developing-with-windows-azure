@@ -65,16 +65,22 @@
     <Compile Include="Data\Context.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Entities\Video.cs" />
+    <Compile Include="Entities\VideoAsset.cs" />
+    <Compile Include="Enums\FileType.cs" />
     <Compile Include="Enums\VideoStatus.cs" />
     <Compile Include="Media\MediaServices.cs" />
     <Compile Include="Media\VideoProcessor.cs" />
-    <Compile Include="Migrations\201210080035008_initial.cs" />
-    <Compile Include="Migrations\201210080035008_initial.Designer.cs">
-      <DependentUpon>201210080035008_initial.cs</DependentUpon>
+    <Compile Include="Migrations\201210080035008_Initial.cs" />
+    <Compile Include="Migrations\201210080035008_Initial.Designer.cs">
+      <DependentUpon>201210080035008_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\201210091541295_AddVideoStatusColumn.cs" />
     <Compile Include="Migrations\201210091541295_AddVideoStatusColumn.Designer.cs">
       <DependentUpon>201210091541295_AddVideoStatusColumn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210211833239_AddVideoAssetTable.cs" />
+    <Compile Include="Migrations\201210211833239_AddVideoAssetTable.Designer.cs">
+      <DependentUpon>201210211833239_AddVideoAssetTable.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -88,11 +94,14 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201210080035008_initial.resx">
-      <DependentUpon>201210080035008_initial.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201210080035008_Initial.resx">
+      <DependentUpon>201210080035008_Initial.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210091541295_AddVideoStatusColumn.resx">
       <DependentUpon>201210091541295_AddVideoStatusColumn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210211833239_AddVideoAssetTable.resx">
+      <DependentUpon>201210211833239_AddVideoAssetTable.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

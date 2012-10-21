@@ -11,7 +11,12 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 {
 	public class VideosController : Controller
 	{
-		private Repository _repository = new Repository();
+		private Repository _repository = null;
+
+		public VideosController()
+		{
+			_repository = new Repository();
+		}
 
 		public ActionResult Index()
 		{

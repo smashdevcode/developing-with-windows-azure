@@ -24,7 +24,7 @@
 	message: "Click on a row to display that file.",
 	additionalRowAttributes: (item => 
 		string.Format("class=\"viewfile\" mediaservices-filetype=\"{0}\" mediaservices-assetid=\"{1}\" mediaservices-fileid=\"{2}\"", 
-		Html.AttributeEncode(DevelopingWithWindowsAzure.Shared.Media.MediaServices.GetFileType(item.Name)), 
+		Html.AttributeEncode(DevelopingWithWindowsAzure.Shared.Enums.FileTypeHelper.GetFileType(item.Name)), 
 		Html.AttributeEncode(item.Asset.Id), Html.AttributeEncode(item.Id)))))
 
 @(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.ILocator>("locators", Model.Locators, header: "Locators",

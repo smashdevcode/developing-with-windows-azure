@@ -1,5 +1,8 @@
-﻿using System;
+﻿using DevelopingWithWindowsAzure.Shared.Data;
+using DevelopingWithWindowsAzure.Shared.Migrations;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
@@ -22,6 +25,8 @@ namespace DevelopingWithWindowsAzure.Site
 			FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
 			RouteConfig.RegisterRoutes(RouteTable.Routes);
 			BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+			Database.SetInitializer(new MigrateDatabaseToLatestVersion<Context, Configuration>());
 		}
 	}
 }

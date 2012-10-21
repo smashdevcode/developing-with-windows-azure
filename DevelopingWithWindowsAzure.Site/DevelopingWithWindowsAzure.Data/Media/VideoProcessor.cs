@@ -25,29 +25,18 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 
 		public void SaveVideo(Video video)
 		{
-			// retrieve reference to the blob
-			string newFileName = null;
-			var blob = BlobStorage.GetNewBlob(VIDEOS_CONTAINER, video.FileName, out newFileName);
+			// upload the file
+			var newFileName = BlobStorage.UploadBlob(VIDEOS_CONTAINER, video.FileName, video.FileData);
 
 			// update the file name if it's been changed
 			if (video.FileName != newFileName)
 				video.FileName = newFileName;
 
-			// JCTODO move to another helper method???
-			// create the blob
-			blob.UploadFromStream(video.FileData);
-			//using (var memoryStream = new System.IO.MemoryStream(video.FileData))
-			//{
-			//	blob.UploadFromStream(memoryStream);
-			//}
-
 			// save the video to the database
 			_repository.InsertOrUpdateVideo(video);
 
-			// send the message
-			var client = QueueConnector.GetQueueClient();
-			// JCTODO move to a method on the QueueConnector class???
-			client.Send(new BrokeredMessage(video.VideoID));
+			// send the message to the video processor
+			QueueConnector.SendMessage(video.VideoID);
 		}
 		public void DeleteVideo(int videoID)
 		{

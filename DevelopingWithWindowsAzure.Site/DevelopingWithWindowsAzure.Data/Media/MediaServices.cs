@@ -7,19 +7,12 @@ using DevelopingWithWindowsAzure.Shared.Entities;
 using System.Diagnostics;
 using DevelopingWithWindowsAzure.Shared.Storage;
 using System.IO;
+using DevelopingWithWindowsAzure.Shared.Enums;
 
 namespace DevelopingWithWindowsAzure.Shared.Media
 {
 	public class MediaServices : IDisposable
 	{
-		public enum FileType
-		{
-			Unknown,
-			MP4,
-			WMV,
-			XML
-		}
-
 		// JCTODO move to configuration file
 		private const string MEDIA_SERVICES_ACCOUNT_NAME = "developingwithazure";
 		private const string MEDIA_SERVICES_ACCOUNT_KEY = "EqDLzcDnFGDGUXxqZ5M9PBvT2r+pT8Rf9RKqQvyXDUc=";
@@ -29,24 +22,6 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 		public MediaServices()
 		{
 			_context = new CloudMediaContext(MEDIA_SERVICES_ACCOUNT_NAME, MEDIA_SERVICES_ACCOUNT_KEY);
-		}
-
-		public static FileType GetFileType(string fileName)
-		{
-			var fileExtension = Path.GetExtension(fileName);
-			if (string.IsNullOrEmpty(fileExtension))
-				return FileType.Unknown;
-			switch (fileExtension.ToLower())
-			{
-				case ".mp4":
-					return FileType.MP4;
-				case ".wmv":
-					return FileType.WMV;
-				case ".xml":
-					return FileType.XML;
-				default:
-					throw new ApplicationException("Unexpected file extension: " + fileExtension);
-			}
 		}
 
 		#region Context Collections
@@ -102,6 +77,20 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 				_context.Assets.Delete(asset);
 			}
 		}
+		public string GetAssetSasUrl(IAsset asset, string fileExtension)
+		{
+			return GetAssetSasUrl(asset, fileExtension, new TimeSpan(1, 0, 0));
+		}
+		public string GetAssetSasUrl(IAsset asset, string fileExtension, TimeSpan accessPolicyTimeout)
+		{
+			var file = (from f in asset.Files
+						where f.Name.EndsWith(fileExtension)
+						select f).FirstOrDefault();
+			if (file != null)
+				return GetAssetSasUrl(asset, file, accessPolicyTimeout);
+			else
+				return null;
+		}
 		public string GetAssetSasUrl(IAsset asset, IFileInfo file)
 		{
 			return GetAssetSasUrl(asset, file, new TimeSpan(1, 0, 0));
@@ -129,16 +118,6 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 
 			// return the url
 			return uriBuilder.Uri.AbsoluteUri;
-		}
-		public string GetAssetSasUrl(IAsset asset, string fileExtension, TimeSpan accessPolicyTimeout)
-		{
-			var file = (from f in asset.Files
-						where f.Name.EndsWith(fileExtension)
-						select f).FirstOrDefault();
-			if (file != null)
-				return GetAssetSasUrl(asset, file, accessPolicyTimeout);
-			else
-				return null;
 		}
 		#endregion
 		#region Content Keys
@@ -173,7 +152,7 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			var job = GetJob(jobID);
 			job.Delete();
 		}
-		public void CreateEncodingJob(Video video)
+		public string CreateEncodingJob(Video video)
 		{
 			// JCTODO put into a method to get a new asset for a video???
 
@@ -239,6 +218,9 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 
 			// submit the job
 			job.Submit();
+
+			// return the job id
+			return job.Id;
 
 			// checks job progress
 			//CheckJobProgress(job.Id);

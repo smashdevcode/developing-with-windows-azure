@@ -6,10 +6,13 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 {
 	public interface IRepository : IDisposable
 	{
+		List<Video> GetVideos();
+		List<Video> GetVideos(Enums.VideoStatus videoStatus);
+		Video GetVideo(int videoID);
+		void InsertOrUpdateVideo(Video video);
 		void DeleteVideo(int videoID);
 		void DeleteVideo(Video video);
-		Video GetVideo(int videoID);
-		List<Video> GetVideos();
-		void InsertOrUpdateVideo(Video video);
+		List<VideoAsset> GetVideoAssets(int videoID);
+		void InsertOrUpdateVideoAsset(VideoAsset videoAsset);
 	}
 }

@@ -9,6 +9,8 @@ namespace DevelopingWithWindowsAzure.Shared.Enums
 	{
 		Uploaded = 0,
 		Processing = 1,
-		Processed = 2
+		Processed = 2,
+		ProcessingFailed = 3,
+		ProcessingCancelled = 4
 	}
 }
