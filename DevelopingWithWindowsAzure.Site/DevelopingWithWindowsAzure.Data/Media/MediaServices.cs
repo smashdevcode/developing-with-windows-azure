@@ -76,6 +76,42 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 				_context.Assets.Delete(asset);
 			}
 		}
+		public string GetAssetSasUrl(IAsset asset, IFileInfo file, TimeSpan accessPolicyTimeout)
+		{
+			// JCTODO do you need to delete the locator yourself?!?!?
+
+			// check to see if a locator is already available
+			// (that doesn't expire for another 30 minutes)
+			var locator = (from l in asset.Locators
+						   orderby l.ExpirationDateTime descending
+						   where l.ExpirationDateTime > DateTime.UtcNow
+						   select l).FirstOrDefault();
+			if (locator == null)
+			{
+				// create a policy for the asset
+				IAccessPolicy readPolicy = _context.AccessPolicies.Create("ReadPolicy", accessPolicyTimeout, AccessPermissions.Read);
+				locator = _context.Locators.CreateSasLocator(asset, readPolicy, DateTime.UtcNow.AddMinutes(-5));
+			}
+			Trace.WriteLine("Locator path: " + locator.Path);
+
+			// now take the locator path, add the file name, and build a complete SAS URL to browse to the asset
+			var uriBuilder = new UriBuilder(locator.Path);
+			uriBuilder.Path += "/" + file.Name;
+			Trace.WriteLine("Full URL to file: " + uriBuilder.Uri.AbsoluteUri);
+
+			// return the url
+			return uriBuilder.Uri.AbsoluteUri;
+		}
+		public string GetAssetSasUrl(IAsset asset, string fileExtension, TimeSpan accessPolicyTimeout)
+		{
+			var file = (from f in asset.Files
+						where f.Name.EndsWith(fileExtension)
+						select f).FirstOrDefault();
+			if (file != null)
+				return GetAssetSasUrl(asset, file, accessPolicyTimeout);
+			else
+				return null;
+		}
 		#endregion
 		#region Jobs
 		public IJob GetJob(string jobID)
@@ -96,7 +132,7 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 				string.Format("Asset_VideoID_{0}", video.VideoID), AssetCreationOptions.None);
 
 			// create a locator to get the SAS URL
-			IAccessPolicy writePolicy = _context.AccessPolicies.Create("Policy For Copying", TimeSpan.FromMinutes(30), AccessPermissions.Write | AccessPermissions.List);
+			IAccessPolicy writePolicy = _context.AccessPolicies.Create("WriteListPolicy", TimeSpan.FromMinutes(30), AccessPermissions.Write | AccessPermissions.List);
 			ILocator destinationLocator = _context.Locators.CreateSasLocator(asset, writePolicy, DateTime.UtcNow.AddMinutes(-5));
 
 			// create the reference to the destination container
@@ -176,6 +212,17 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			//WriteToFile(outFilePath, sasUrl);		
 		}
 		#endregion
+		#region Locators
+		public void RevokeLocator(string locatorID)
+		{
+			var locator = (from l in _context.Locators
+						   where l.Id == locatorID
+						   select l).FirstOrDefault();
+			if (locator == null)
+				throw new ApplicationException("Unknown locator: " + locatorID);
+			_context.Locators.Revoke(locator);
+		}
+		#endregion
 		#region MediaProcessors
 		private IMediaProcessor GetMediaProcessorByName(string mediaProcessorName)
 		{
@@ -187,48 +234,6 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			return mediaProcessor;
 		}
 		#endregion
-		// JCTODO setup this method!!!
-		//private static String GetAssetSasUrl(IAsset asset, TimeSpan accessPolicyTimeout)
-		//{
-		//	// Create a policy for the asset.
-		//	IAccessPolicy readPolicy = _context.AccessPolicies.Create("My Test Policy", accessPolicyTimeout, AccessPermissions.Read);
-
-		//	// Create a locator for the asset. This assigns the policy to the asset and returns a locator. 
-		//	// Also specify the startTime parameter, setting it 5 minutes before "Now", so that the locator
-		//	// is accessible right away even if there is clock skew between the server time and local time. 
-		//	ILocator locator = _context.Locators.CreateSasLocator(asset,
-		//		readPolicy,
-		//		DateTime.UtcNow.AddMinutes(-5));
-
-		//	// Print the path for the locator you created.
-		//	Console.WriteLine("Locator path: ");
-		//	Console.WriteLine(locator.Path);
-		//	Console.WriteLine();
-
-		//	// Get the asset file name, you use this to create the SAS URL. In this sample, 
-		//	// get an output file with an .mp4 ending. We know that .mp4 is the type of 
-		//	// output file the encoding job produces and we don't want a link to the 
-		//	// .xml metadata file on the server, in this case.
-		//	var theOutputFile =
-		//						from f in asset.Files
-		//						where f.Name.EndsWith(".mp4")
-		//						select f;
-		//	// Cast the IQueryable variable back to an IFileInfo.
-		//	IFileInfo theFile = theOutputFile.FirstOrDefault();
-		//	string fileName = theFile.Name;
-
-		//	// Now take the locator path, add the file name, and build a complete SAS URL to browse to the asset.
-		//	var uriBuilder = new UriBuilder(locator.Path);
-		//	uriBuilder.Path += "/" + fileName;
-
-		//	// Print the full SAS URL
-		//	Console.WriteLine("Full URL to file: ");
-		//	Console.WriteLine(uriBuilder.Uri.AbsoluteUri);
-		//	Console.WriteLine();
-
-		//	// Return the SAS URL. 
-		//	return uriBuilder.Uri.AbsoluteUri;
-		//}
 		//private void CheckJobProgress(string jobID)
 		//{
 		//	// flag to indicate when job state is finished

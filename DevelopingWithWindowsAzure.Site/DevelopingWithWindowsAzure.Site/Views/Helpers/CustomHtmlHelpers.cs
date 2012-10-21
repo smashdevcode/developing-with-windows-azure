@@ -75,7 +75,7 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 
 			sb.AppendLine("<thead>");
 			sb.AppendLine("<tr>");
-			if (detailsAction != null | deleteAction != null)
+			if (detailsAction != null || otherAction != null || deleteAction != null)
 				sb.AppendLine("<th style=\"width: 150px\"></th>");
 			foreach (var property in propertiesToDisplay)
 				sb.AppendFormat("<th>{0}</th>{1}", property.Name, Environment.NewLine);
@@ -91,7 +91,7 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 			foreach (var item in items)
 			{
 				sb.AppendLine("<tr>");
-				if (detailsAction != null | deleteAction != null)
+				if (detailsAction != null || otherAction != null || deleteAction != null)
 				{
 					sb.Append("<td>");
 					if (detailsAction != null)
@@ -101,8 +101,17 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 					{
 						if (otherActionText == null)
 							throw new ApplicationException("Please provide a value for the otherActionText parameter.");
-						sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
-							html.AttributeEncode(otherAction(item)), otherActionText);
+						var otherActionLink = otherAction(item);
+						if (otherActionLink.StartsWith("javascript:"))
+						{
+							sb.AppendFormat("<a href=\"#\" onclick=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
+								html.AttributeEncode(otherActionLink.Replace("javascript:", string.Empty)), otherActionText);
+						}
+						else
+						{
+							sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
+								html.AttributeEncode(otherActionLink), otherActionText);
+						}
 					}
 					if (deleteAction != null)
 						sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-danger btn-mini\">{1}</a>&nbsp;",

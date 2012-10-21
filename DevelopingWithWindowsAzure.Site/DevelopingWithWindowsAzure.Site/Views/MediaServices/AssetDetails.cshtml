@@ -10,11 +10,37 @@
 
 @Html.RenderDetails(Model)
 
+<div id="videocontainer" class="pf-container"></div>
+
 @(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IContentKey>(Model.ContentKeys, header: "Content Keys"))
 
-@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IFileInfo>(Model.Files, header: "Files"))
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IFileInfo>(Model.Files, header: "Files",
+	otherAction: (item => "javascript:PlayVideo('" + 
+		((DevelopingWithWindowsAzure.Site.Controllers.MediaServicesController)this.ViewContext.Controller)
+		.MediaServices.GetAssetSasUrl(Model, item, new TimeSpan(1, 0, 0)) + "')"),
+	otherActionText: "View"))
 
-@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.ILocator>(Model.Locators, header: "Locators"))
+@(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.ILocator>(Model.Locators, header: "Locators",
+	deleteAction: (item => Url.Action("LocatorDelete", new { locatorid=item.Id })), deleteActionText: "Revoke"))
 
 @(Html.RenderGrid<Microsoft.WindowsAzure.MediaServices.Client.IAsset>(Model.ParentAssets, header: "Parent Assets", 
 	detailsAction: (item => Url.Action("AssetDetails", new { assetid=item.Id }))))
+
+<script>
+	function PlayVideo(videoSource) {
+		var player = new PlayerFramework.Player("videocontainer",
+		{
+			mediaPluginFallbackOrder: ["VideoElementMediaPlugin", "SilverlightMediaPlugin"],
+			width: "480px",
+			height: "320px",
+			sources:
+			[
+				{
+					src: videoSource,
+					type: 'video/mp4; codecs="h.264"'
+				},
+			]
+		});
+		return false;
+	}
+</script>
