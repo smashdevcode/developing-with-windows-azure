@@ -9,6 +9,7 @@ using System.Text;
 
 namespace DevelopingWithWindowsAzure.Shared.Storage
 {
+	// JCTODO remove all connection string parameters
 	public class BlobStorage
 	{
 		private const string DEFAULT_CONNECTION_STRING_NAME = "StorageConnectionString";

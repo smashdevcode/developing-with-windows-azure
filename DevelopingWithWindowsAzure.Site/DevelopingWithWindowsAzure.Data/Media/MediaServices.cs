@@ -152,6 +152,7 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			var job = GetJob(jobID);
 			job.Delete();
 		}
+		// JCTODO replace video parameter with "unique identifier" and "file name" parameters???
 		public string CreateEncodingJob(Video video)
 		{
 			// JCTODO put into a method to get a new asset for a video???
@@ -221,27 +222,6 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 
 			// return the job id
 			return job.Id;
-
-			// checks job progress
-			//CheckJobProgress(job.Id);
-
-			// get an updated job reference
-			// after waiting for the job on the thread in the CheckJobProgress method
-			//job = GetJob(job.Id);
-
-			// get a reference to the output asset from the job
-			//IAsset outputAsset = job.OutputMediaAssets[0];
-
-			// set the class-level variable so you can retrieve the asset later
-			//_outputAssetID = outputAsset.Id;
-
-			// you can optionally get a SAS URL to the output asset
-			//string sasUrl = GetAssetSasUrl(outputAsset, TimeSpan.FromMinutes(30));
-
-			// write the URL to a local file
-			// you can use the saved SAS URL to browse directly to the asset
-			//string outFilePath = Path.GetFullPath(outputFolder + @"\" + "SasUrl.txt");
-			//WriteToFile(outFilePath, sasUrl);		
 		}
 		#endregion
 		#region Locators

@@ -29,6 +29,8 @@ namespace DevelopingWithWindowsAzure.Shared.Data
 			videoEntity.Property(v => v.Title).HasMaxLength(100).IsRequired();
 			videoEntity.Ignore(v => v.VideoStatusEnum);
 			videoEntity.Ignore(v => v.FileData);
+
+			// JCTODO add video asset entity tweaks
 		}
 	}
 }

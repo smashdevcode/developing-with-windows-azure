@@ -7,7 +7,7 @@ namespace DevelopingWithWindowsAzure.Shared.Enums
 {
 	public enum VideoStatus
 	{
-		Uploaded = 0,
+		Pending = 0,
 		Processing = 1,
 		Processed = 2,
 		ProcessingFailed = 3,

@@ -16,16 +16,16 @@ namespace DevelopingWithWindowsAzure.Shared.Entities
 
 		public int VideoID { get; set; }
 		public string FileName { get; set; }
-		public string FileNameWithoutExtension
-		{
-			get
-			{
-				if (!string.IsNullOrEmpty(this.FileName))
-					return System.IO.Path.GetFileNameWithoutExtension(this.FileName);
-				else
-					return null;
-			}
-		}
+		//public string FileNameWithoutExtension
+		//{
+		//	get
+		//	{
+		//		if (!string.IsNullOrEmpty(this.FileName))
+		//			return System.IO.Path.GetFileNameWithoutExtension(this.FileName);
+		//		else
+		//			return null;
+		//	}
+		//}
 		public string Title { get; set; }
 		public string Description { get; set; }
 		public DateTime AddedOn { get; set; }

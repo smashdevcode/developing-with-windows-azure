@@ -39,7 +39,7 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 			video.FileName = file.FileName;
 			video.FileData = file.InputStream;
 			video.AddedOn = DateTime.UtcNow;
-			video.VideoStatusEnum = Shared.Enums.VideoStatus.Uploaded;
+			video.VideoStatusEnum = Shared.Enums.VideoStatus.Pending;
 
 			var videoProcessor = new VideoProcessor(_repository);
 			videoProcessor.SaveVideo(video);

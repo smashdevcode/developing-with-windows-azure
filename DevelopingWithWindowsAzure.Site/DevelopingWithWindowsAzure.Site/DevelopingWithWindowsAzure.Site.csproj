@@ -132,6 +132,7 @@
     <Compile Include="Controllers\StorageController.cs" />
     <Compile Include="Controllers\MediaServicesAPIController.cs" />
     <Compile Include="Controllers\MediaServicesController.cs" />
+    <Compile Include="Controllers\VideosAPIController.cs" />
     <Compile Include="Controllers\VideosController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -225,6 +226,7 @@
     <Content Include="Scripts\knockout-2.1.0.js" />
     <Content Include="Scripts\modernizr-2.5.3.js" />
     <Content Include="Scripts\playerframework.min.js" />
+    <Content Include="Scripts\videomediaplayer.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>

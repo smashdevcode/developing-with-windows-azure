@@ -35,9 +35,6 @@ namespace DevelopingWithWindowsAzure.Shared.Queue
 			// get the queue name
 			var queueName = CloudConfigurationManager.GetSetting("ServiceBusQueueName");
 
-			// JCTODO is this necessary to set??? okay to let it autodetect the ports???
-			//ServiceBusEnvironment.SystemConnectivity.Mode = ConnectivityMode.Http;
-
 			// create the queue if it doesn't exist
 			var namespaceManager = CreateNamespaceManager();
 			if (!namespaceManager.QueueExists(queueName))
