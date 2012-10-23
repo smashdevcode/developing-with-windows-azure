@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DevelopingWithWindowsAzure.Shared.Data
 {
-	// JCTODO remove
+	// JCTODO remove???
 	public interface IRepository : IDisposable
 	{
 		List<Video> GetVideos();

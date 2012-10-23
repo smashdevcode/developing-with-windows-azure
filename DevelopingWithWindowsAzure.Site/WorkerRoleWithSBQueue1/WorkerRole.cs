@@ -113,7 +113,7 @@ namespace WorkerRoleWithSBQueue1
 								Trace.WriteLine(string.Format("VideoID {0}: Creating encoding job...", video.VideoID));
 
 								// create the encoding job
-								var jobID = _mediaServices.CreateEncodingJob(video);
+								var jobID = _mediaServices.CreateEncodingJob(string.Format("VideoID_{0}", video.VideoID), video.FileName);
 
 								// update the video's job ID and set its status to "processing"
 								video.MediaServicesJobID = jobID;

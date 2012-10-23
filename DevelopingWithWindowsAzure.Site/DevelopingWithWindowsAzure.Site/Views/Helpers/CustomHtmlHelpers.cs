@@ -123,17 +123,6 @@ namespace DevelopingWithWindowsAzure.Site.Views.Helpers
 						sb.AppendFormat("<a id=\"{2}\" href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
 							html.AttributeEncode(otherActionLink), otherActionText, 
 							string.Format("{0}otherlink{1}", idPrefix, itemsList.IndexOf(item)));
-						// JCTODO remove???
-						//if (otherActionLink.StartsWith("javascript:"))
-						//{
-						//	sb.AppendFormat("<a href=\"#\" onclick=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
-						//		html.AttributeEncode(otherActionLink.Replace("javascript:", string.Empty)), otherActionText);
-						//}
-						//else
-						//{
-						//	sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-info btn-mini\">{1}</a>&nbsp;",
-						//		html.AttributeEncode(otherActionLink), otherActionText);
-						//}
 					}
 					if (deleteAction != null)
 						sb.AppendFormat("<a href=\"{0}\" class=\"btn btn-danger btn-mini\">{1}</a>&nbsp;",

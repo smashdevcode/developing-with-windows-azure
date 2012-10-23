@@ -8,20 +8,19 @@ using System.Diagnostics;
 using DevelopingWithWindowsAzure.Shared.Storage;
 using System.IO;
 using DevelopingWithWindowsAzure.Shared.Enums;
+using Microsoft.WindowsAzure;
 
 namespace DevelopingWithWindowsAzure.Shared.Media
 {
 	public class MediaServices : IDisposable
 	{
-		// JCTODO move to configuration file
-		private const string MEDIA_SERVICES_ACCOUNT_NAME = "developingwithazure";
-		private const string MEDIA_SERVICES_ACCOUNT_KEY = "EqDLzcDnFGDGUXxqZ5M9PBvT2r+pT8Rf9RKqQvyXDUc=";
-
 		private CloudMediaContext _context = null;
 
 		public MediaServices()
 		{
-			_context = new CloudMediaContext(MEDIA_SERVICES_ACCOUNT_NAME, MEDIA_SERVICES_ACCOUNT_KEY);
+			var accountName = CloudConfigurationManager.GetSetting("MediaServicesAccountName");
+			var accountKey = CloudConfigurationManager.GetSetting("MediaServicesAccountKey");
+			_context = new CloudMediaContext(accountName, accountKey);
 		}
 
 		#region Context Collections
@@ -152,25 +151,23 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			var job = GetJob(jobID);
 			job.Delete();
 		}
-		// JCTODO replace video parameter with "unique identifier" and "file name" parameters???
-		public string CreateEncodingJob(Video video)
+		public string CreateEncodingJob(string jobIdentifer, string fileName)
 		{
-			// JCTODO put into a method to get a new asset for a video???
-
 			// create an empty asset
 			IAsset asset = _context.Assets.CreateEmptyAsset(
-				string.Format("Asset_VideoID_{0}", video.VideoID), AssetCreationOptions.None);
+				string.Format("Asset_", jobIdentifer), AssetCreationOptions.None);
 
-			// create a locator to get the SAS URL
-			IAccessPolicy writePolicy = _context.AccessPolicies.Create("WriteListPolicy", TimeSpan.FromMinutes(30), AccessPermissions.Write | AccessPermissions.List);
+			// create a locator to get the SAS (shared access signature) URL
+			IAccessPolicy writePolicy = _context.AccessPolicies.Create("WriteListPolicy", TimeSpan.FromMinutes(30), 
+				AccessPermissions.Write | AccessPermissions.List);
 			ILocator destinationLocator = _context.Locators.CreateSasLocator(asset, writePolicy, DateTime.UtcNow.AddMinutes(-5));
 
 			// create the reference to the destination container
 			var destinationFileUrl = new Uri(destinationLocator.Path);
 			var destinationContainerName = destinationFileUrl.Segments[1];
 
-			// get and validate the source blob, in this case a file called FileToCopy.mp4:
-			var sourceFileBlob = BlobStorage.GetBlob(VideoProcessor.VIDEOS_CONTAINER, video.FileName);
+			// get and validate the source blob
+			var sourceFileBlob = BlobStorage.GetBlob(VideoProcessor.VIDEOS_CONTAINER, fileName);
 			sourceFileBlob.FetchAttributes();
 			var sourceLength = sourceFileBlob.Properties.Length;
 			Debug.Assert(sourceLength > 0);
@@ -178,7 +175,7 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			// if we got here then we can assume the source is valid and accessible
 
 			// create destination blob for copy, in this case, we choose to rename the file
-			var destinationFileBlob = BlobStorage.GetBlob(destinationContainerName, video.FileName);
+			var destinationFileBlob = BlobStorage.GetBlob(destinationContainerName, fileName);
 			destinationFileBlob.CopyFromBlob(sourceFileBlob);  // will fail here if project references are bad (the are lazy loaded)
 
 			// check destination blob
@@ -193,11 +190,8 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			// refresh the asset
 			asset = GetAsset(asset.Id);
 
-
-
-
 			// declare a new job
-			var job = _context.Jobs.Create(string.Format("EncodingJob_VideoID_{0}", video.VideoID));
+			var job = _context.Jobs.Create(string.Format("EncodingJob_{0}", jobIdentifer));
 
 			// get a media processor reference, and pass to it the name of the 
 			// processor to use for the specific task
@@ -205,7 +199,7 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 
 			// create a task with the encoding details, using a string preset
 			var task = job.Tasks.AddNew(
-				string.Format("EncodingTask_H264_VideoID_{0}", video.VideoID),
+				string.Format("EncodingTask_MP4_{0}", jobIdentifer),
 				processor,
 				"H.264 256k DSL CBR",
 				TaskCreationOptions.None);
@@ -214,7 +208,7 @@ namespace DevelopingWithWindowsAzure.Shared.Media
 			task.InputMediaAssets.Add(asset);
 
 			// add an output asset to contain the results of the job
-			task.OutputMediaAssets.AddNew(string.Format("{0} H264", video.FileName),
+			task.OutputMediaAssets.AddNew(string.Format("{0} H264", fileName),
 				true, AssetCreationOptions.None);
 
 			// submit the job

@@ -29,13 +29,6 @@ namespace DevelopingWithWindowsAzure.Site.Controllers
 		[HttpPost]
 		public ActionResult Upload(Video video, HttpPostedFileBase file)
 		{
-			// JCTODO setup validations for the file???
-			// file types???
-			// size???
-			// other???
-
-			// set properties on the video object
-			// JCTODO use method on the entity that accepts HttpPostedFileBase instance???
 			video.FileName = file.FileName;
 			video.FileData = file.InputStream;
 			video.AddedOn = DateTime.UtcNow;

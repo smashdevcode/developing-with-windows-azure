@@ -8,6 +8,8 @@
 			<Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=developingwithazure;AccountKey=ib6WNL3pZVB0Q0u+x1priHZ55JKw30OU0uPdgkDZwcJCb+0JCvHTSlMrfPGFRdvmMz1v6u1Y2gQNRbs89pSwLg==" />
 			<Setting name="ServiceBusQueueName" value="VideosToProcess" />
 			<Setting name="Microsoft.ServiceBus.ConnectionString" value="Endpoint=sb://developingwithazure.servicebus.windows.net/;SharedSecretIssuer=owner;SharedSecretValue=z9214eUotU8zTjO79FMAS+myrVuYwVA/PMOjiPHqV7M=" />
-    </ConfigurationSettings>
+			<Setting name="MediaServicesAccountName" value="developingwithazure" />
+			<Setting name="MediaServicesAccountKey" value="EqDLzcDnFGDGUXxqZ5M9PBvT2r+pT8Rf9RKqQvyXDUc=" />
+		</ConfigurationSettings>
   </Role>
 </ServiceConfiguration>
